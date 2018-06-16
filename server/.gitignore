@@ -1,0 +1,13 @@
+data/
+jd_data/
+code/
+result/
+contestant.*
+db.sqlite3
+*.log
+input.txt
+judging
+log
+res.txt
+tasklib.*
+
