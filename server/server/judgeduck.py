@@ -41,12 +41,19 @@ from . import jd_utils as utils
 
 from . import jd_judge
 
+def render_view(req, title, content):
+	res = HttpResponse(content_type="text/html")
+	if title != "":
+		title += " - "
+	title += "Judge Duck Online"
+	res.write(htmldocs.header_htmldoc % html.escape(title))
+	res.write(content)
+	res.write(htmldocs.footer_htmldoc % utils.get_current_time())
+	return res
 
 
 def index_view(req):
-	res = HttpResponse(content_type="text/html")
-	res.write(htmldocs.index_htmldoc)
-	return res
+	return render_view(req, "", htmldocs.index_htmldoc)
 
 
 

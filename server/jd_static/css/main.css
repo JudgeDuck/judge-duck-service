@@ -44,11 +44,6 @@ th, td {
 	overflow-y: scroll;
 }
 
-div.row {
-	margin-top: -30px;
-}
-
-
 textarea{
 	height:50%%;
 	width:100%%;

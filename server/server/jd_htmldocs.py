@@ -1,62 +1,56 @@
 #encoding=utf-8
 
+from . import jd_utils as utils
+
+header_htmldoc = utils.read_file("jd_htmldocs/header.html")
+footer_htmldoc = utils.read_file("jd_htmldocs/footer.html")
 
 index_htmldoc = """
-<!DOCTYPE html>
-<html>
-
-<head>
-<meta charset="UTF-8">
-
-<title> Judge Duck Online </title>
-
-<script src="/libs/js/jquery-3.2.1.min.js"></script>
-
-<!-- Latest compiled and minified CSS -->
-<link rel="stylesheet" href="/libs/css/bootstrap.min.css" />
-
-<!-- Latest compiled and minified JavaScript -->
-<script src="/libs/js/bootstrap.min.js"></script>
-
-<link rel="stylesheet" type="text/css" href="/css/main.css" />
-<link rel="stylesheet" href="/css/non-responsive.css" type="text/css" /> 
-
-
-</head>
-
-<body onload="">
-<script> document.body.style.zoom = 1.0 * Math.max(window.screen.width, 1440) / 1440; </script>
-
-<!-- Fixed navbar -->
-<nav class="navbar navbar-fixed-top" role="navigation">
-	<div class="container">
-		<div class="navbar-header">
-			<div class="navbar-brand">
-				<img src="/images/wys.png" width="30px" height="30px" />
-			</div>
-			
-			
-			<font class="navbar-brand">
-				Judge Duck Online
-			</font>
+	<div class="row" style="margin-top: 0px">
+		<div class="col-xs-8">
+			<table class="table table-hover table-align-left">
+				<tr>
+					<th class="col-xs-6"> 公告 </th>
+					<th class="col-xs-2"> </th>
+				</tr>
+				<tr>
+					<td> <a href="/blog/2"> 评测鸭上线啦 </a> </td>
+					<td> 2019-01-01 23:33:33 </td>
+				</tr>
+				<tr>
+					<td> <a href="/blog/1"> 什么是评测鸭 </a> </td>
+					<td> 2019-01-01 00:00:00 </td>
+				</tr>
+				<tr>
+					<td> <a href="/blog/1"> test 3 </a> </td>
+					<td> 2018-01-01 23:33:33 </td>
+				</tr>
+				<tr>
+					<td> <a href="/blog/1"> test 4 </a> </td>
+					<td> 2018-01-01 23:33:33 </td>
+				</tr>
+				<tr>
+					<td> <a href="/blog/1"> test 5 </a> </td>
+					<td> 2018-01-01 23:33:33 </td>
+				</tr>
+			</table>
 		</div>
-		<div id="navbar" class="navbar-collapse collapse">
-			<form role="form" class="navbar-form" method="get">
-				<div class="form-group">
-					<input type="text" class="form-control" name="q" maxlength="100" value="{{ query }}" placeholder="Search the news ..." style="width:40em" />
-					<button type="submit" class="btn btn-primary">Search</button>
-				</div>
-			</form>
-		</div><!--/.nav-collapse -->
+		<div class="col-xs-4" style="text-align: center">
+			<img src="/images/wys.png" width="250px" height="250px" style="border: 1px solid #ccc" />
+		</div>
 	</div>
-</nav>
 
+	<hr />
 
-
-</body>
-
-</html>
-
+	<div class="row jumbotron">
+		<p style="font-size: 18px">
+			“奋战三星期，造台……” 计算机？评测机？不，评测鸭！ <br />
+			【评测鸭在线】是你见过的第一个能够精确计时的 OJ！ <br />
+			在这里，你可以知道 register int 和 int 哪个快，或者尝试时间限制 10 us 的题，或者围观跑得最快的代码。 <br />
+			你也可以加入QQ群，评测鸭用户群，群号是 781384211 。
+		</p>
+		<a href="/blog/1" class="btn btn-primary btn-lg"> 了解更多 </a>
+	</div>
 """
 
 index_problem_list_problem = """
