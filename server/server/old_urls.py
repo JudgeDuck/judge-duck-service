@@ -409,7 +409,7 @@ def result_server_thread_func():
 def judge_server_thread_func():
 	while True:
 		time.sleep(1)
-		files = os.listdir("pending")
+		files = list_dir("pending")
 		min_id = -1
 		for filename in files:
 			if filename[-4:] == ".txt":

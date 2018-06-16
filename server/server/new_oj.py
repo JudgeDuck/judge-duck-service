@@ -196,7 +196,7 @@ def do_judge(sid):
 def judge_server_thread_func():
 	while True:
 		time.sleep(1)
-		files = os.listdir(db.path_pending)
+		files = utils.list_dir(db.path_pending)
 		min_id = -1
 		for filename in files:
 			if filename[-4:] == ".txt":
