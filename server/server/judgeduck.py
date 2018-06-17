@@ -60,7 +60,8 @@ def faq_view(req):
 	faq_html = markdown2.markdown(faq_content)
 	return render_view(req, "常见问题及解答", htmldocs.faq_htmldoc % faq_html)
 
-
+def register_view(req):
+	return render_view(req, "注册", htmldocs.register_htmldoc)
 
 
 
@@ -75,14 +76,19 @@ def entry(req):
 		return static_view_serve(req, path = path[6:], document_root = "./jd_static/libs")
 	if path[:5] == "/css/":
 		return static_view_serve(req, path = path[5:], document_root = "./jd_static/css")
+	if path[:4] == "/js/":
+		return static_view_serve(req, path = path[4:], document_root = "./jd_static/js")
 	if path[:8] == "/images/":
 		return static_view_serve(req, path = path[8:], document_root = "./jd_static/images")
 	
 	if path == "/":
 		return index_view(req)
-	
 	if path == "/faq":
 		return faq_view(req)
+	
+	if path == "/user/register":
+		return register_view(req)
+	
 	
 	raise Http404()
 #
