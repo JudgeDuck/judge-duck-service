@@ -6,6 +6,7 @@ header_htmldoc = utils.read_file("jd_htmldocs/header.html")
 footer_htmldoc = utils.read_file("jd_htmldocs/footer.html")
 
 index_htmldoc = utils.read_file("jd_htmldocs/index.html")
+faq_htmldoc = utils.read_file("jd_htmldocs/faq.html")
 
 index_problem_list_problem = """
 <strong><a target="_blank" href="problem?pid=%s">%s</a></strong> %s

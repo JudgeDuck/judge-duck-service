@@ -55,6 +55,11 @@ def render_view(req, title, content):
 def index_view(req):
 	return render_view(req, "", htmldocs.index_htmldoc)
 
+def faq_view(req):
+	faq_content = utils.read_file("jd_data/faq.md")
+	faq_html = markdown2.markdown(faq_content)
+	return render_view(req, "常见问题及解答", htmldocs.faq_htmldoc % faq_html)
+
 
 
 
@@ -75,6 +80,9 @@ def entry(req):
 	
 	if path == "/":
 		return index_view(req)
+	
+	if path == "/faq":
+		return faq_view(req)
 	
 	raise Http404()
 #
