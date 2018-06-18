@@ -15,6 +15,7 @@ path_users = path_prefix + "users/"
 
 import re
 from random import *
+import hashlib
 
 from threading import *
 lock = Lock()
@@ -106,6 +107,8 @@ def get_board(pid):
 	return board
 
 
+def encrypt_password(password):
+	return hashlib.md5(password.encode("utf-8")).hexdigest()
 
 def do_register(username, email, password):
 	ret = {"status": "failed"}
@@ -129,7 +132,7 @@ def do_register(username, email, password):
 	user = {
 		"username": username,
 		"email": email,
-		"password": password,
+		"password": encrypt_password(password),
 		"signature": rand_signature(),
 	}
 	write_user_profile(user)
@@ -154,8 +157,32 @@ def rand_signature():
 	]
 	return a[randint(0, len(a) - 1)]
 
+def do_login(req, username, password):
+	ret = {"status": "failed"}
+	if req.session.get("username", None) != None:
+		ret["error"] = "您已经在线了"
+		return ret
+	lock.acquire()
+	res = check_user_password(username, password)
+	lock.release()
+	if not res:
+		ret["error"] = "用户名或密码错误"
+		return ret
+	ret["status"] = "success"
+	req.session["username"] = username
+	return ret
 
+def check_user_password(username, password):
+	global users
+	user = users.get(username, None)
+	if user == None:
+		return False
+	if user["password"] != encrypt_password(password):
+		return False
+	return True
 
+def do_logout(req):
+	del req.session["username"]
 
 
 def init():
@@ -201,9 +228,9 @@ def add_user(username):
 			if s[:len(k)] == k:
 				match_k = k
 				break
-			if match_k != None:
-				val = s[len(match_k) + 1:]
-				user[match_k] = val
+		if match_k != None:
+			val = s[len(match_k) + 1:]
+			user[match_k] = val
 	users[username] = user
 
 def write_user_profile(user):

@@ -35,7 +35,7 @@ var judgeduck = function() {
 		if (pass1.match(pass_regex) == null) {
 			return alert("密码太短或太长！");
 		}
-		var pass = md5(pass + pass_salt);
+		var pass = md5(pass1 + pass_salt);
 		do_post("/user/do_register", {
 			username: user,
 			email: email,
@@ -64,6 +64,33 @@ var judgeduck = function() {
 		return true;
 	};
 	
+	var do_login = function(user, pass) {
+		pass = md5(pass + pass_salt);
+		do_post("/user/do_login", {
+			username: user,
+			password: pass
+		}, function(data) {
+			var ret = function(data) {
+				if (!data) {
+					return alert("登录失败：网络错误");
+				}
+				if (data["status"] == "success") {
+					return true;
+				}
+				if (data["status"] == "failed") {
+					return alert("登录失败：" + data["error"]);
+				}
+				return alert("登录失败：未知错误");
+			}(data);
+			if (ret) {
+				window.location = "/";
+			} else {
+				$("#btn_login").attr("disabled", false);
+				$("#password").focus();
+			}
+		});
+	};
+	
 	var register = function() {
 		var user = $("#username").val();
 		var email = $("#email").val();
@@ -76,7 +103,15 @@ var judgeduck = function() {
 		}
 	};
 	
+	var login = function() {
+		var user = $("#username").val();
+		var pass = $("#password").val();
+		$("#btn_login").attr("disabled", true);
+		do_login(user, pass);
+	};
+	
 	return {
-		register: register
+		register: register,
+		login: login
 	};
 }();

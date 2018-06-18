@@ -5,11 +5,13 @@ from . import jd_utils as utils
 path_htmldocs = "jd_htmldocs/"
 
 header_htmldoc = utils.read_file(path_htmldocs + "header.html")
+header_online_htmldoc = utils.read_file(path_htmldocs + "header_online.html")
 footer_htmldoc = utils.read_file(path_htmldocs + "footer.html")
 
 index_htmldoc = utils.read_file(path_htmldocs + "index.html")
 faq_htmldoc = utils.read_file(path_htmldocs + "faq.html")
 register_htmldoc = utils.read_file(path_htmldocs + "register.html")
+login_htmldoc = utils.read_file(path_htmldocs + "login.html")
 
 index_problem_list_problem = """
 <strong><a target="_blank" href="problem?pid=%s">%s</a></strong> %s

@@ -47,7 +47,11 @@ def render_view(req, title, content):
 	if title != "":
 		title += " - "
 	title += "Judge Duck Online"
-	res.write(htmldocs.header_htmldoc % html.escape(title))
+	username = req.session.get("username", None)
+	if username != None:
+		res.write(htmldocs.header_online_htmldoc % (html.escape(title), username, username))
+	else:
+		res.write(htmldocs.header_htmldoc % html.escape(title))
 	res.write(content)
 	res.write(htmldocs.footer_htmldoc % utils.get_current_time())
 	return res
@@ -72,6 +76,19 @@ def do_register(req):
 	password = req.POST.get("password", "")
 	return json_response(req, db.do_register(username, email, password))
 
+def login_view(req):
+	if req.session.get("username", None) != None:
+		return HttpResponseRedirect("/")
+	return render_view(req, "登录", htmldocs.login_htmldoc)
+
+def do_login(req):
+	username = req.POST.get("username", "")
+	password = req.POST.get("password", "")
+	return json_response(req, db.do_login(req, username, password))
+
+def logout_view(req):
+	db.do_logout(req)
+	return HttpResponseRedirect("/")
 
 
 
@@ -99,6 +116,12 @@ def entry(req):
 		return register_view(req)
 	if path == "/user/do_register":
 		return do_register(req)
+	if path == "/user/login":
+		return login_view(req)
+	if path == "/user/do_login":
+		return do_login(req)
+	if path == "/user/logout":
+		return logout_view(req)
 	
 	raise Http404()
 #
