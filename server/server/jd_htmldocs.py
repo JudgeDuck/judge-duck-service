@@ -16,6 +16,16 @@ profile_htmldoc = utils.read_file(path_htmldocs + "profile.html")
 profile_self_htmldoc = utils.read_file(path_htmldocs + "profile_self.html")
 edit_profile_htmldoc = utils.read_file(path_htmldocs + "edit_profile.html")
 
+problems_htmldoc = utils.read_file(path_htmldocs + "problems.html")
+problems_problem = """
+				<tr>
+					<td> %s </td>
+					<td> <a href="/problem/%s"> %s </a> </td>
+					<td> %s </td>
+				</tr>
+"""
+
+
 index_problem_list_problem = """
 <strong><a target="_blank" href="problem?pid=%s">%s</a></strong> %s
 <strong><a target="_blank" href="board?pid=%s">排行榜</a></strong>

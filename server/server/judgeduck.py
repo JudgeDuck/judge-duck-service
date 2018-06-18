@@ -138,6 +138,20 @@ def rand_signature_view(req):
 	db.do_rand_signature(username)
 	return HttpResponseRedirect("/user/profile/%s" % username)
 
+#
+
+def problems_view(req):
+	# TODO: 考虑用户是否 AC 这道题
+	plist = db.do_get_problem_list()
+	ret = []
+	for pid in plist:
+		pinfo = db.do_get_problem_info(pid)
+		if pinfo == None:
+			continue
+		name = html.escape(pinfo["name"])
+		description = "%s %s, %s" % (html.escape(pinfo["description"]), pinfo["time_limit_text"], pinfo["memory_limit_text"])
+		ret.append(htmldocs.problems_problem % (pid, pid, name, description))
+	return render_view(req, "题目列表", htmldocs.problems_htmldoc % "\n".join(ret))
 
 
 
@@ -183,6 +197,9 @@ def entry(req):
 		return do_edit_profile(req)
 	if path == "/user/rand_signature":
 		return rand_signature_view(req)
+	
+	if path == "/problems":
+		return problems_view(req)
 	
 	raise Http404()
 #

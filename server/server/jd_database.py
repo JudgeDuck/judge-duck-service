@@ -29,7 +29,7 @@ submissions = None
 last_sub_id = 0
 
 
-def get_problem_list():
+def do_get_problem_list():
 	lock.acquire()
 	ret = []
 	for pid in problems:
@@ -37,7 +37,7 @@ def get_problem_list():
 	lock.release()
 	return sorted(ret)
 
-def get_problem_info(pid):
+def do_get_problem_info(pid):
 	lock.acquire()
 	ret = problems.get(pid, None)
 	lock.release()
@@ -46,7 +46,7 @@ def get_problem_info(pid):
 #
 
 # return sid
-def submit(pid, name, code):
+def do_submit(pid, name, code):
 	lock.acquire()
 	pinfo = problems.get(pid, None)
 	if pinfo == None:
@@ -75,14 +75,14 @@ def submit(pid, name, code):
 		lock.release()
 		return None
 
-def get_submission(sid):
+def do_get_submission(sid):
 	lock.acquire()
 	ret = submissions.get(sid, None)
 	lock.release()
 	return ret
 
 
-def get_board(pid):
+def do_get_board(pid):
 	lock.acquire()
 	pinfo = problems.get(pid, None)
 	if pinfo == None:
