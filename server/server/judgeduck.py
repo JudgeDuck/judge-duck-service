@@ -153,6 +153,24 @@ def problems_view(req):
 		ret.append(htmldocs.problems_problem % (pid, pid, name, description))
 	return render_view(req, "题目列表", htmldocs.problems_htmldoc % "\n".join(ret))
 
+def problem_view(req):
+	pid = req.path[len("/problem/"):]
+	pinfo = db.do_get_problem_info(pid)
+	if pinfo == None:
+		raise Http404()
+	return render_view(req, "%s - 题目" % pinfo["name"], render_problem(pinfo))
+
+def render_problem(pinfo):
+	ret = "<h2> %s </h2>" % html.escape(pinfo["name"])
+	ret += "<hr />"
+	ret += "时间限制： %s <br />" % pinfo["time_limit_text"]
+	ret += "空间限制： %s <br />" % pinfo["memory_limit_text"]
+	ret += "<br />"
+	ret += markdown2.markdown(pinfo["statement"])
+	ret += "<hr />"
+	ret += htmldocs.problem_page_submit_htmldoc % (pinfo["pid"], html.escape(pinfo["sample_code"]))
+	return ret
+
 
 
 
@@ -200,6 +218,8 @@ def entry(req):
 	
 	if path == "/problems":
 		return problems_view(req)
+	if re.match("^/problem/.*$", path):
+		return problem_view(req)
 	
 	raise Http404()
 #

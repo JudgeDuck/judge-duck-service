@@ -26,56 +26,13 @@ problems_problem = """
 """
 
 
-index_problem_list_problem = """
-<strong><a target="_blank" href="problem?pid=%s">%s</a></strong> %s
-<strong><a target="_blank" href="board?pid=%s">排行榜</a></strong>
-<br />
-<br />
-"""
-
-
-problem_page_htmldoc = """
-<html>
-<head>
-<meta http-equiv=Content-Type content="text/html;charset=utf-8">
-<title>测一测</title>
-<style type="text/css">
-textarea{
-height:50%%;
-width:100%%;
-display:block;
-max-width:100%%;
-line-height:1.5;
-border-radius:3px;
-font:16px Consolas;
-transition:box-shadow 0.5s ease;
-font-smoothing:subpixel-antialiased;
-}
-</style>
-</head>
-<body>
-
-<h1>测一测</h1>
-<h2>公告：正在升级中，服务可能不稳定，感谢您的支持！</h2>
-6月9日更新：可以使用全局变量和在函数中定义静态(static)变量了，如果仍有问题请反馈
-
-<br />
-<br />
-
-%s
-
-</body>
-</html>
-"""
-
 problem_page_submit_htmldoc = """
-<form id="form" method="post" action="submit?pid=%s">
-<input type="submit" value="提交" />
-你的昵称：<input type="text" name="name" value="咕咕咕" />
-<br />
-<textarea name="code">
-%s</textarea>
-</form>
+				<input type="hidden" id="pid" value="%s" />
+				<label for="code"> 你的代码 </label>
+				<textarea id="code" class="form-control" rows="10">%s</textarea>
+				<br />
+				<a href="javascript:judgeduck.submit()" id="btn_submit" class="btn btn-md btn-default"> 提交 </a>
+				<br />
 """
 
 
