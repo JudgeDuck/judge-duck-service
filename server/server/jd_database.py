@@ -10,7 +10,11 @@ path_metadata = path_prefix + "metadata/"
 path_result = path_prefix + "result/"
 path_pending = path_prefix + "pending/"
 path_pending_rejudge = path_prefix + "pending_rejudge/"
+path_users = path_prefix + "users/"
 
+
+import re
+from random import *
 
 from threading import *
 lock = Lock()
@@ -18,6 +22,7 @@ lock = Lock()
 from . import jd_utils as utils
 import os
 
+users = None
 problems = None
 submissions = None
 last_sub_id = 0
@@ -102,16 +107,115 @@ def get_board(pid):
 
 
 
+def do_register(username, email, password):
+	ret = {"status": "failed"}
+	user_regex = "^[a-zA-Z0-9_]{3,20}$"
+	email_regex = '^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$'
+	pass_regex = "^[a-f0-9]{32,32}$"
+	if not re.match(user_regex, username):
+		ret["error"] = "用户名必须由 3 ~ 20 个字母、数字或下划线组成！"
+		return ret
+	if not re.match(email_regex, email):
+		ret["error"] = "电子邮件地址不合法！"
+	if not re.match(pass_regex, password):
+		ret["error"] = "密码格式不正确！"
+	
+	lock.acquire()
+	global users
+	if users.get(username, None) != None:
+		ret["error"] = "用户名已被使用！"
+		lock.release()
+		return ret
+	user = {
+		"username": username,
+		"email": email,
+		"password": password,
+		"signature": rand_signature(),
+	}
+	write_user_profile(user)
+	users[username] = user
+	lock.release()
+	return {"status": "success"}
+
+def rand_signature():
+	a = [
+		"门前大桥下，游过一群鸭，快来快来数一数，二四六七八",
+		"31331 33565 6665444 23212",
+		"XX XXX XXXXX XXXXXXX XXXXX",
+		"奋战三星期，造台评测鸭",
+		"常数优化多小才算够~",
+		"O(松)算法通过多从容~",
+		"咕咕咕",
+		"嘎嘎嘎",
+		"喵喵喵",
+		"愿天下所有的小鸡、小鸭、小朋友们都能健康成长",
+		"我好菜啊",
+		"我好巨啊",
+	]
+	return a[randint(0, len(a) - 1)]
+
+
+
 
 
 def init():
 	lock.acquire()
+	init_users()
 	init_problems()
 	init_submissions()
 	lock.release()
 
 def reload():
 	init()
+#
+
+def init_users():
+	global users
+	users = {}
+	li = utils.list_dir(path_users)
+	for filename in li:
+		if filename[-4:] != ".txt":
+			continue
+		username = filename[:-4]
+		add_user(username)
+	print("total %d users" % len(users))
+
+def add_user(username):
+	global users
+	filename = path_users + username + ".txt"
+	content = utils.read_file(filename).split("\n")
+	user = {
+		"username": username,
+		"email": "",
+		"password": "",
+		"signature": "",
+	}
+	keys = [
+		"email",
+		"password",
+		"signature",
+	]
+	for s in content:
+		match_k = None
+		for k in keys:
+			if s[:len(k)] == k:
+				match_k = k
+				break
+			if match_k != None:
+				val = s[len(match_k) + 1:]
+				user[match_k] = val
+	users[username] = user
+
+def write_user_profile(user):
+	filename = path_users + user["username"] + ".txt"
+	temp_filename = path_temp + "tmp_user.txt"
+	f = open(temp_filename, "w")
+	f.write("\n".join(["%s %s" % (k, user[k]) for k in user]))
+	f.close()
+	try:
+		os.rename(temp_filename, filename)
+	except:
+		print("Error: write user [%s]'s profile failed" % user["username"])
 
 def init_problems():
 	global problems
@@ -151,7 +255,7 @@ def add_problem(pid):
 				match_k = k
 				break
 		if match_k != None:
-			val = s[len(k) + 1:]
+			val = s[len(match_k) + 1:]
 			if match_k == "time_limit" or match_k == "memory_limit":
 				val = int(val)
 				if val <= 0:

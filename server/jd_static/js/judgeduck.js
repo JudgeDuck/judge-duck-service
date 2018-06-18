@@ -41,18 +41,27 @@ var judgeduck = function() {
 			email: email,
 			password: pass
 		}, function(data) {
-			if (!data) {
-				return alert("注册失败：网络错误");
+			var ret = function(data) {
+				if (!data) {
+					return alert("注册失败：网络错误");
+				}
+				if (data["status"] == "success") {
+					alert("注册成功");
+					return true;
+				}
+				if (data["status"] == "failed") {
+					return alert("注册失败：" + data["error"]);
+				}
+				return alert("注册失败：未知错误");
+			}(data);
+			if (ret) {
+				window.location = "/";
+			} else {
+				$("#btn_register").attr("disabled", false);
+				$("#username").focus();
 			}
-			if (data["status"] == "success") {
-				alert("注册成功");
-				return true;
-			}
-			if (data["status"] == "failed") {
-				return alert("注册失败：" + data["error"]);
-			}
-			return alert("注册失败：未知错误");
 		});
+		return true;
 	};
 	
 	var register = function() {
@@ -61,9 +70,7 @@ var judgeduck = function() {
 		var pass1 = $("#password1").val();
 		var pass2 = $("#password2").val();
 		$("#btn_register").attr("disabled", true);
-		if (do_register(user, email, pass1, pass2)) {
-			window.location = "/";
-		} else {
+		if (!do_register(user, email, pass1, pass2)) {
 			$("#btn_register").attr("disabled", false);
 			$("#username").focus();
 		}

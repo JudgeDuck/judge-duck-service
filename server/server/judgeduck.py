@@ -34,6 +34,7 @@ import threading
 import time
 import datetime
 import markdown2
+import json
 
 from . import jd_htmldocs as htmldocs
 from . import jd_database as db
@@ -51,6 +52,8 @@ def render_view(req, title, content):
 	res.write(htmldocs.footer_htmldoc % utils.get_current_time())
 	return res
 
+def json_response(req, info):
+	return HttpResponse(json.dumps(info), content_type="application/json")
 
 def index_view(req):
 	return render_view(req, "", htmldocs.index_htmldoc)
@@ -62,6 +65,12 @@ def faq_view(req):
 
 def register_view(req):
 	return render_view(req, "注册", htmldocs.register_htmldoc)
+
+def do_register(req):
+	username = req.POST.get("username", "")
+	email = req.POST.get("email", "")
+	password = req.POST.get("password", "")
+	return json_response(req, db.do_register(username, email, password))
 
 
 
@@ -88,7 +97,8 @@ def entry(req):
 	
 	if path == "/user/register":
 		return register_view(req)
-	
+	if path == "/user/do_register":
+		return do_register(req)
 	
 	raise Http404()
 #
