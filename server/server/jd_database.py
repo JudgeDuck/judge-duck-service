@@ -108,7 +108,7 @@ def get_board(pid):
 
 
 def encrypt_password(password):
-	return hashlib.md5(password.encode("utf-8")).hexdigest()
+	return hashlib.md5((password + "judge-duck").encode("utf-8")).hexdigest()
 
 def do_register(username, email, password):
 	ret = {"status": "failed"}
@@ -120,8 +120,10 @@ def do_register(username, email, password):
 		return ret
 	if not re.match(email_regex, email):
 		ret["error"] = "电子邮件地址不合法！"
+		return ret
 	if not re.match(pass_regex, password):
 		ret["error"] = "密码格式不正确！"
+		return ret
 	
 	lock.acquire()
 	global users
@@ -183,6 +185,67 @@ def check_user_password(username, password):
 
 def do_logout(req):
 	del req.session["username"]
+
+def do_get_user_info(username):
+	lock.acquire()
+	global users
+	ret = users.get(username, None)
+	lock.release()
+	return ret
+
+def do_rand_signature(username):
+	lock.acquire()
+	global users
+	user = users.get(username, None)
+	if user != None:
+		user["signature"] = rand_signature()
+		write_user_profile(user)
+	lock.release()
+
+def do_edit_profile(req, password, email, new_password, signature):
+	ret = {"status": "failed"}
+	username = req.session.get("username", None)
+	if username == None:
+		ret["error"] = "请先登录"
+		return ret
+	email_regex = '^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$'
+	pass_regex = "^[a-f0-9]{32,32}$"
+	if not re.match(email_regex, email):
+		ret["error"] = "电子邮件地址不合法！"
+		return ret
+	if (new_password != "") and (not re.match(pass_regex, new_password)):
+		ret["error"] = "密码格式不正确！"
+		return ret
+	signature = signature.split("\n")[0].split("\r")[0]
+	if len(signature) > 35:
+		ret["error"] = "个性签名太长！"
+		return ret
+	
+	lock.acquire()
+	if not check_user_password(username, password):
+		ret["error"] = "原密码不正确！"
+		lock.release()
+		return ret
+	global users
+	user = users.get(username, None)
+	if user != None:
+		if new_password != "":
+			user["password"] = encrypt_password(new_password)
+		user["email"] = email
+		user["signature"] = signature
+		write_user_profile(user)
+	lock.release()
+	ret["status"] = "success"
+	ret["username"] = username
+	return ret
+	
+
+
+
+
+
+
+
 
 
 def init():

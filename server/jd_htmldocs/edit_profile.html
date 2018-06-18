@@ -1,0 +1,39 @@
+	<div class="row">
+		<h2> 更改个人信息 </h2>
+		<hr />
+		<div class="row">
+			<div class="col-xs-4">
+				<label for="password"> 原密码 </label>
+				<input type="password" class="form-control" id="password" />
+				<br />
+				
+				<label for="email"> 电子邮件 </label>
+				<input type="text" class="form-control" id="email" value="%s" />
+				<br />
+				
+				<label for="password1"> 新密码（留空为不修改） </label>
+				<input type="password" class="form-control" id="password1" />
+				<br />
+				
+				<label for="password2"> 重复新密码 </label>
+				<input type="password" class="form-control" id="password2" />
+				<br />
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-xs-8">
+				<label for="signature"> 个性签名 </label>
+				<input type="text" class="form-control" id="signature" value="%s" />
+				<br />
+				
+				<a href="javascript:judgeduck.edit_profile()" id="btn_edit_profile" class="btn btn-md btn-default"> 提交 </a>
+				<br />
+			</div>
+		</div>
+		<br />
+		<p>
+			我们保证：
+			您的个人信息会被安全地保存在我们的服务器中，而信息传输全程加密。
+			另外您的密码会被加密保存，即使是服务器管理员也无法解密。
+		</p>
+	</div>

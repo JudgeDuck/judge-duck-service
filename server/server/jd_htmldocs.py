@@ -12,6 +12,9 @@ index_htmldoc = utils.read_file(path_htmldocs + "index.html")
 faq_htmldoc = utils.read_file(path_htmldocs + "faq.html")
 register_htmldoc = utils.read_file(path_htmldocs + "register.html")
 login_htmldoc = utils.read_file(path_htmldocs + "login.html")
+profile_htmldoc = utils.read_file(path_htmldocs + "profile.html")
+profile_self_htmldoc = utils.read_file(path_htmldocs + "profile_self.html")
+edit_profile_htmldoc = utils.read_file(path_htmldocs + "edit_profile.html")
 
 index_problem_list_problem = """
 <strong><a target="_blank" href="problem?pid=%s">%s</a></strong> %s

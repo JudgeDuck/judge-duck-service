@@ -35,6 +35,8 @@ import time
 import datetime
 import markdown2
 import json
+import re
+import hashlib
 
 from . import jd_htmldocs as htmldocs
 from . import jd_database as db
@@ -90,6 +92,57 @@ def logout_view(req):
 	db.do_logout(req)
 	return HttpResponseRedirect("/")
 
+def profile_view(req):
+	username = req.path[len("/user/profile/"):]
+	user = db.do_get_user_info(username)
+	if user == None:
+		raise Http404()
+	is_self = username == req.session.get("username", "")
+	email = user["email"]
+	args = (
+		username,
+		email,
+		html.escape(user["signature"]),
+		get_gravatar_image_src(email),
+	)
+	doc = htmldocs.profile_self_htmldoc if is_self else htmldocs.profile_htmldoc
+	return render_view(req, "%s - 用户信息" % username, doc % args)
+
+def get_gravatar_image_src(email):
+	return "https://www.gravatar.com/avatar/%s?d=mm&s=512" % hashlib.md5(email.lower().encode("utf-8")).hexdigest()
+
+def edit_profile_view(req):
+	username = req.session.get("username", None)
+	if username == None:
+		return HttpResponseRedirect("/")
+	user = db.do_get_user_info(username)
+	if user == None:
+		return HttpResponseRedirect("/")
+	args = (
+		user["email"],
+		html.escape(user["signature"]),
+	)
+	return render_view(req, "更改个人信息", htmldocs.edit_profile_htmldoc % args)
+
+def do_edit_profile(req):
+	password = req.POST.get("password", "")
+	email = req.POST.get("email", "")
+	new_password = req.POST.get("new_password", "")
+	signature = req.POST.get("signature", "")
+	return json_response(req, db.do_edit_profile(req, password, email, new_password, signature))
+
+def rand_signature_view(req):
+	username = req.session.get("username", None)
+	if username == None:
+		return HttpResponseRedirect("/")
+	db.do_rand_signature(username)
+	return HttpResponseRedirect("/user/profile/%s" % username)
+
+
+
+
+
+
 
 
 
@@ -122,6 +175,14 @@ def entry(req):
 		return do_login(req)
 	if path == "/user/logout":
 		return logout_view(req)
+	if re.match("^/user/profile/(.{3,20})$", path):
+		return profile_view(req)
+	if path == "/user/edit_profile":
+		return edit_profile_view(req)
+	if path == "/user/do_edit_profile":
+		return do_edit_profile(req)
+	if path == "/user/rand_signature":
+		return rand_signature_view(req)
 	
 	raise Http404()
 #
