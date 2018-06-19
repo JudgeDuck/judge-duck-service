@@ -72,9 +72,9 @@ def do_submit(req, pid, code):
 		code_to_write = code
 		utils.write_file(path_temp + "code.txt", code_to_write)
 		utils.write_file(path_temp + "code_copy.txt", code_to_write)
-		meta = name + "\n"
-		meta += utils.get_current_time() + "\n"
-		meta += pid + "\n"
+		meta = "player_name %s\n" % name
+		meta += "submit_time %s\n" % utils.get_current_time()
+		meta += "pid %s\n" % pid
 		utils.write_file(path_temp + "meta.txt", meta)
 		os.rename(path_temp + "meta.txt", path_metadata + "%d.txt" % sid)
 		os.rename(path_temp + "code.txt", path_code + "%d.txt" % sid)
@@ -408,7 +408,7 @@ def init_submissions():
 	for i in range(n_subs):
 		update_submission(i)
 
-def update_submission(sid):
+def update_submission(sid, new_judge_time = None):
 	name = path_result + "%d.txt" % sid
 	res_str = utils.read_file(name)
 	res_arr = res_str.split("\n")
@@ -423,16 +423,55 @@ def update_submission(sid):
 	#code_content = read_file("code/%d.txt" % id)
 	#code_first_row = code_content.split("\n")[0]
 	
-	metadata_content = utils.read_file(path_metadata + "%d.txt" % sid).split("\n")
+	metadata_filename = path_metadata + "%d.txt" % sid
+	metadata_content = utils.read_file(metadata_filename).split("\n")
+	if new_judge_time != None:
+		tmp = ["judge_time %s" % new_judge_time]
+		for s in metadata_content:
+			if s[:len("judge_time ")] == "judge_time ":
+				continue
+			tmp.append(s)
+		metadata_content = tmp
+		try:
+			f = open(metadata_filename, "w")
+			f.write("\n".join(tmp))
+			f.close()
+		except:
+			pass
+	
 	player_name = "咕咕咕"
 	submit_time = "不存在的"
+	judge_time = "N/A"
 	pid = ""
-	try:
-		player_name = metadata_content[0]
-		submit_time = metadata_content[1]
-		pid = metadata_content[2]
-	except:
-		return
+	keys = [
+		"judge_time",
+		"player_name",
+		"submit_time",
+		"pid",
+	]
+	for s in metadata_content:
+		if s == "hidden":
+			if submissions.get(sid, None) != None:
+				del submissions[sid]
+			return
+		match_k = None
+		match_content = None
+		for k in keys:
+			if s[:len(k)] == k:
+				match_k = k
+				match_content = s[len(k) + 1:]
+				break
+		if match_k == None:
+			continue
+		if match_k == "judge_time":
+			judge_time = match_content
+		if match_k == "submit_time":
+			submit_time = match_content
+		if match_k == "player_name":
+			player_name = match_content
+		if match_k == "pid":
+			pid = match_content
+	
 	
 	#if code_first_row[:len(name_magic)] == name_magic:
 	#	player_name = code_first_row[len(name_magic):]
@@ -451,7 +490,7 @@ def update_submission(sid):
 		"code_length_text": "N/A",
 		"name": player_name,
 		"submit_time": submit_time,
-		"judge_time": utils.get_file_mtime(path_result + "%d.txt" % sid, "N/A")
+		"judge_time": judge_time,
 	}
 	
 	sub["code_length_text"] = utils.render_code_length(sub["code_length"])
@@ -461,10 +500,6 @@ def update_submission(sid):
 	
 	global submissions
 	for s in res_arr:
-		if s == "hidden":
-			if submissions.get(sid, None) != None:
-				del submissions[sid]
-			return
 		if s == "Correct Answer!":
 			ok1 = True
 		if s[:len("verdict = ")] == "verdict = ":

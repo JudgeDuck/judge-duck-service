@@ -50,7 +50,7 @@ def do_judge(sid):
 	fres.write(result)
 	fres.close()
 	os.rename(db.path_temp + "judge_res.txt", db.path_result + "%d.txt" % sid)
-	db.update_submission(sid)
+	db.update_submission(sid, utils.get_current_time())
 
 def judge_server_thread_func():
 	print("jd judge server started")
