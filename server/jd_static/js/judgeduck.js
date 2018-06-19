@@ -133,6 +133,32 @@ var judgeduck = function() {
 		return true;
 	};
 	
+	var do_submit = function(pid, code) {
+		do_post("/do_submit", {
+			pid: pid,
+			code: code
+		}, function(data) {
+			var ret = function(data) {
+				if (!data) {
+					return alert("提交失败：网络错误");
+				}
+				if (data["status"] == "success") {
+					return true;
+				}
+				if (data["status"] == "failed") {
+					return alert("提交失败：" + data["error"]);
+				}
+				return alert("提交失败：未知错误");
+			}(data);
+			if (ret) {
+				window.location = "/submissions";
+			} else {
+				$("#btn_submit").attr("disabled", false);
+				$("#code").focus();
+			}
+		});
+	};
+	
 	var register = function() {
 		var user = $("#username").val();
 		var email = $("#email").val();
@@ -165,9 +191,17 @@ var judgeduck = function() {
 		}
 	};
 	
+	var submit = function() {
+		var pid = $("#pid").val();
+		var code = $("#code").val();
+		$("#btn_submit").attr("disabled", true);
+		do_submit(pid, code);
+	};
+	
 	return {
 		register: register,
 		login: login,
-		edit_profile: edit_profile
+		edit_profile: edit_profile,
+		submit: submit
 	};
 }();

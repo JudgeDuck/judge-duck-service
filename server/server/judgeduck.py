@@ -267,7 +267,7 @@ def render_submissions(subs):
 		pname = ""
 		if pinfo != None:
 			pname = html.escape(pinfo["name"])
-		score = sub["score"]
+		score = sub["score_text"]
 		time_text = sub["time_text"]
 		memory_text = sub["memory_text"]
 		code_length_text = sub["code_length_text"]
@@ -296,7 +296,7 @@ def submission_view(req):
 	pname = ""
 	if pinfo != None:
 		pname = html.escape(pinfo["name"])
-	score = sub["score"]
+	score = sub["score_text"]
 	status = sub["status"]
 	time_text = sub["time_text"]
 	memory_text = sub["memory_text"]
@@ -331,6 +331,11 @@ def submission_view(req):
 		html.escape(code_content),
 	)
 	return render_view(req, "提交记录 %s" % sid, doc % args)
+
+def do_submit(req):
+	pid = req.POST.get("pid", "")
+	code = req.POST.get("code", "")
+	return json_response(req, db.do_submit(req, pid, code))
 
 
 
@@ -383,6 +388,8 @@ def entry(req):
 		return submissions_view(req)
 	if re.match("^/submission/(0|[1-9][0-9]*)$", path):
 		return submission_view(req)
+	if path == "/do_submit":
+		return do_submit(req)
 	
 	raise Http404()
 #

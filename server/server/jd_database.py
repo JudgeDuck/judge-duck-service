@@ -45,14 +45,26 @@ def do_get_problem_info(pid):
 
 #
 
-# return sid
-def do_submit(pid, name, code):
+# return json
+def do_submit(req, pid, code):
+	ret = {"status": "failed"}
+	name = req.session.get("username", None)
+	if name == None:
+		ret["error"] = "请先登录"
+		return ret
+	
 	lock.acquire()
 	pinfo = problems.get(pid, None)
 	if pinfo == None:
 		lock.release()
-		return None
-	name = name.strip().split("\n")[0].split("\r")[0]
+		ret["error"] = "题目不存在"
+		return ret
+	
+	if len(code) > 100 * 1024:
+		lock.release()
+		ret["error"] = "代码太长"
+		return ret
+	
 	global last_sub_id
 	sid = last_sub_id
 	print("sid %s, pid %s, name %s" % (sid, pid, name))
@@ -70,10 +82,12 @@ def do_submit(pid, name, code):
 		update_submission(sid)
 		last_sub_id += 1
 		lock.release()
-		return sid
+		ret["status"] = "success"
+		return ret
 	except:
 		lock.release()
-		return None
+		ret["error"] = "系统错误"
+		return ret
 
 def do_get_submission(sid):
 	lock.acquire()
@@ -430,7 +444,8 @@ def update_submission(sid):
 		"time_text": "N/A",
 		"memory": None,
 		"memory_text": "N/A",
-		"score": None,
+		"score": 0,
+		"score_text": "N/A",
 		"code_length": len(utils.read_file(path_code + "%d.txt" % sid)),
 		"code_length_text": "N/A",
 		"name": player_name,
@@ -472,6 +487,7 @@ def update_submission(sid):
 		sub["status"] = "Wrong Answer"
 	if sub["status"] != "Pending":
 		sub["score"] = 100 if sub["status"] == "Accepted" else 0
+		sub["score_text"] = "%s" % sub["score"]
 	submissions[sid] = sub
 
 
