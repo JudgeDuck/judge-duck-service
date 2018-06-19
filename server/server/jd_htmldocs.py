@@ -36,6 +36,13 @@ problem_page_submit_htmldoc = """
 """
 
 
+submissions_htmldoc = utils.read_file(path_htmldocs + "submissions.html")
+submissions_my_button = """
+				<div class="pull-right">
+					<a href="/submissions?username=%s" class="btn btn-success"> 我的提交记录 </a>
+				</div>
+"""
+
 
 
 

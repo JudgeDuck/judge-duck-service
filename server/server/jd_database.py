@@ -239,6 +239,27 @@ def do_edit_profile(req, password, email, new_password, signature):
 	ret["username"] = username
 	return ret
 	
+#
+
+def do_get_submissions(pid, username, score1, score2):
+	lock.acquire()
+	global submissions
+	res = {}
+	for sub in submissions.values():
+		if (pid != "") and (sub["pid"] != pid):
+			continue
+		if (username != "") and (sub["name"] != username):
+			continue
+		score = sub["score"]
+		if (score < score1) or (score > score2):
+			continue
+		res[-sub["sid"]] = sub
+	keys = sorted(res.keys())
+	ret = []
+	for k in keys:
+		ret.append(res[k])
+	lock.release()
+	return ret
 
 
 
@@ -381,6 +402,9 @@ def update_submission(sid):
 	time_ms = None
 	time_ms_prefix = "time_ms = "
 	time_ms_prefix_len = len(time_ms_prefix)
+	memory_kb = None
+	memory_kb_prefix = "mem_kb = "
+	memory_kb_prefix_len = len(memory_kb_prefix)
 	#code_content = read_file("code/%d.txt" % id)
 	#code_first_row = code_content.split("\n")[0]
 	
@@ -402,17 +426,29 @@ def update_submission(sid):
 		"sid": sid,
 		"pid": pid,
 		"status": "Pending",
-		"time": 1e100,
-		"time_text": "NaN",
+		"time": None,
+		"time_text": "N/A",
+		"memory": None,
+		"memory_text": "N/A",
+		"score": None,
+		"code_length": len(utils.read_file(path_code + "%d.txt" % sid)),
+		"code_length_text": "N/A",
 		"name": player_name,
 		"submit_time": submit_time,
 		"judge_time": utils.get_file_mtime(path_result + "%d.txt" % sid, "")
 	}
 	
+	sub["code_length_text"] = utils.render_code_length(sub["code_length"])
+	
 	if res_str != "":
 		sub["status"] = "Judge Failed"
 	
+	global submissions
 	for s in res_arr:
+		if s == "hidden":
+			if submissions.get(sid, None) != None:
+				del submissions[sid]
+			return
 		if s == "Correct Answer!":
 			ok1 = True
 		if s[:len("verdict = ")] == "verdict = ":
@@ -422,12 +458,18 @@ def update_submission(sid):
 		if s[:time_ms_prefix_len] == time_ms_prefix:
 			time_ms = utils.parse_float(s[time_ms_prefix_len:])
 			sub["time"] = time_ms
+			sub["time_text"] = utils.render_time_ms(time_ms)
+		if s[:memory_kb_prefix_len] == memory_kb_prefix:
+			memory_kb = utils.parse_int(s[memory_kb_prefix_len:])
+			sub["memory"] = memory_kb
+			sub["memory_text"] = utils.render_memory_kb(memory_kb)
 	if ok1 and ok2 and time_ms != None:
 		if time_ms > 0 and time_ms < 100 * 1000:
 			sub["status"] = "Accepted"
 	if ok2 and (not ok1):
 		sub["status"] = "Wrong Answer"
-	global submissions
+	if sub["status"] != "Pending":
+		sub["score"] = 100 if sub["status"] == "Accepted" else 0
 	submissions[sid] = sub
 
 

@@ -91,3 +91,9 @@ def render_memory_kb(ml):
 
 def render_time_ms(t):
 	return render_time_ns(t * 1e6)
+
+def render_code_length(l):
+	if l < 1024:
+		return "%s B" % l
+	else:
+		return "%.2f KB" % (l / 1024.0)

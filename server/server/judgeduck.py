@@ -37,6 +37,7 @@ import markdown2
 import json
 import re
 import hashlib
+import urllib
 
 from . import jd_htmldocs as htmldocs
 from . import jd_database as db
@@ -171,7 +172,117 @@ def render_problem(pinfo):
 	ret += htmldocs.problem_page_submit_htmldoc % (pinfo["pid"], html.escape(pinfo["sample_code"]))
 	return ret
 
+def submissions_view(req):
+	pid = req.GET.get("pid", "")
+	username = req.GET.get("username", "")
+	score1 = req.GET.get("score1", "0")
+	score2 = req.GET.get("score2", "100")
+	score1 = utils.parse_int(score1, 0)
+	score2 = utils.parse_int(score2, 100)
+	if score1 < 0:
+		score1 = 0
+	if score1 > 100:
+		score1 = 100
+	if score2 < 0:
+		score2 = 0
+	if score2 > 100:
+		score2 = 100
+	if score1 > score2:
+		score2 = score1
+	my_button = ""
+	my_username = req.session.get("username", None)
+	if my_username != None:
+		my_button = htmldocs.submissions_my_button % my_username
+	doc = htmldocs.submissions_htmldoc
+	
+	page = req.GET.get("page", "1")
+	page = utils.parse_int(page, 1)
+	if page <= 0:
+		page = 1
+	
+	subs = db.do_get_submissions(pid, username, score1, score2)
+	n_subs = len(subs)
+	n_pages = (n_subs - 1) // 10 + 1
+	if n_pages < 1:
+		n_pages = 1
+	
+	if page > n_pages:
+		page = n_pages
+	
+	subs = subs[(page - 1) * 10 : page * 10]
+	
+	pagination = ""
+	if n_pages > 1:
+		start_page = max(page - 4, 1)
+		end_page = min(start_page + 8, n_pages)
+		start_page = max(end_page - 8, 1)
+		href_str = "/submissions?pid=%s&username=%s&score1=%s&score2=%s&page=" % (
+			urllib.parse.quote(pid),
+			urllib.parse.quote(username),
+			score1,
+			score2,
+		)
+		
+		pagination += '<ul class="pagination">'
+		if page > start_page:
+			pagination += '<li><a href="%s%s" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a></li>' % (
+				href_str,
+				page - 1
+			)
+		else:
+			pagination += '<li class="disabled"><a aria-label="Previous"><span aria-hidden="true">&laquo;</span></a></li>'
+		
+		for i in range(start_page, end_page + 1):
+			if i == page:
+				pagination += '<li class="active"><span>%s</span></li>' % page
+			else:
+				pagination += '<li><a href="%s%s">%s</a></li>' % (href_str, i, i)
+		
+		if page < end_page:
+			pagination += '<li><a href="%s%s" aria-label="Next"><span aria-hidden="true">&raquo;</span></a></li>' % (
+				href_str,
+				page + 1
+			)
+		else:
+			pagination += '<li class="disabled"><a aria-label="Next"><span aria-hidden="true">&raquo;</span></a></li>'
+	
+	args = (
+		html.escape(pid),
+		html.escape(username),
+		score1,
+		score2,
+		my_button,
+		render_submissions(subs),
+		pagination,
+	)
+	return render_view(req, "提交记录", doc % args)
 
+def render_submissions(subs):
+	ret = []
+	for sub in subs:
+		sid = sub["sid"]
+		username = sub["name"]
+		pid = sub["pid"]
+		pinfo = db.do_get_problem_info(pid)
+		pname = ""
+		if pinfo != None:
+			pname = html.escape(pinfo["name"])
+		score = sub["score"]
+		time_text = sub["time_text"]
+		memory_text = sub["memory_text"]
+		code_length_text = sub["code_length_text"]
+		submit_time = sub["submit_time"]
+		tmp = "<tr>"
+		tmp += "<td> <a href='/detail/%s'> %s </a> </td>" % (sid, sid)
+		tmp += "<td style='font-size:13px'> <a href='/user/profile/%s'> %s </a> </td>" % (username, username)
+		tmp += "<td> <a href='/problem/%s'> %s </a> </td>" % (pid, pid + ". " + pname)
+		tmp += "<td> %s </td>" % score
+		tmp += "<td style='font-size:13px'> %s </td>" % time_text
+		tmp += "<td style='font-size:13px'> %s </td>" % memory_text
+		tmp += "<td style='font-size:13px'> %s </td>" % code_length_text
+		tmp += "<td style='font-size:13px'> %s </td>" % submit_time
+		ret.append(tmp)
+	return "\n".join(ret)
 
 
 
@@ -220,6 +331,8 @@ def entry(req):
 		return problems_view(req)
 	if re.match("^/problem/.*$", path):
 		return problem_view(req)
+	if path == "/submissions":
+		return submissions_view(req)
 	
 	raise Http404()
 #
