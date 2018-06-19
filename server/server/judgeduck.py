@@ -273,7 +273,7 @@ def render_submissions(subs):
 		code_length_text = sub["code_length_text"]
 		submit_time = sub["submit_time"]
 		tmp = "<tr>"
-		tmp += "<td> <a href='/detail/%s'> %s </a> </td>" % (sid, sid)
+		tmp += "<td> <a href='/submission/%s'> %s </a> </td>" % (sid, sid)
 		tmp += "<td style='font-size:13px'> <a href='/user/profile/%s'> %s </a> </td>" % (username, username)
 		tmp += "<td> <a href='/problem/%s'> %s </a> </td>" % (pid, pid + ". " + pname)
 		tmp += "<td> %s </td>" % score
@@ -283,6 +283,54 @@ def render_submissions(subs):
 		tmp += "<td style='font-size:13px'> %s </td>" % submit_time
 		ret.append(tmp)
 	return "\n".join(ret)
+
+def submission_view(req):
+	sid = utils.parse_int(req.path[len("/submission/"):])
+	sub = db.do_get_submission(sid)
+	if sub == None:
+		raise Http404()
+	
+	username = sub["name"]
+	pid = sub["pid"]
+	pinfo = db.do_get_problem_info(pid)
+	pname = ""
+	if pinfo != None:
+		pname = html.escape(pinfo["name"])
+	score = sub["score"]
+	status = sub["status"]
+	time_text = sub["time_text"]
+	memory_text = sub["memory_text"]
+	code_length_text = sub["code_length_text"]
+	submit_time = sub["submit_time"]
+	judge_time = sub["judge_time"]
+	
+	detail1 = "\n".join([
+		"<td style='font-size:13px'> <a href='/user/profile/%s'> %s </a> </td>" % (username, username),
+		"<td> <a href='/problem/%s'> %s </a> </td>" % (pid, pid + ". " + pname),
+		"<td> %s </td>" % status,
+		"<td> %s </td>" % score,
+		"<td style='font-size:13px'> %s </td>" % time_text,
+		"<td style='font-size:13px'> %s </td>" % memory_text,
+		"<td style='font-size:13px'> %s </td>" % code_length_text,
+	])
+	
+	detail2 = "\n".join([
+		"<td style='font-size:13px'> %s </td>" % submit_time,
+		"<td style='font-size:13px'> %s </td>" % judge_time,
+	])
+	
+	res_content = utils.read_file(db.path_result + "%d.txt" % sid)
+	code_content = utils.read_file(db.path_code + "%d.txt" % sid)
+	
+	doc = htmldocs.submission_htmldoc
+	args = (
+		sid,
+		detail1,
+		detail2,
+		html.escape(res_content),
+		html.escape(code_content),
+	)
+	return render_view(req, "提交记录 %s" % sid, doc % args)
 
 
 
@@ -333,6 +381,8 @@ def entry(req):
 		return problem_view(req)
 	if path == "/submissions":
 		return submissions_view(req)
+	if re.match("^/submission/(0|[1-9][0-9]*)$", path):
+		return submission_view(req)
 	
 	raise Http404()
 #

@@ -43,6 +43,7 @@ submissions_my_button = """
 				</div>
 """
 
+submission_htmldoc = utils.read_file(path_htmldocs + "submission.html")
 
 
 

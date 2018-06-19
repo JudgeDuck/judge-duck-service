@@ -1,0 +1,40 @@
+	<h2> 提交记录 %s </h2>
+	<hr />
+	
+	<div class="row">
+		<div class="col-xs-12">
+			<table class="table table-bordered">
+				<tr>
+					<th class="col-xs-3"> 用户 </th>
+					<th class="col-xs-3"> 题目 </th>
+					<th class="col-xs-2"> 状态 </th>
+					<th class="col-xs-1"> 得分 </th>
+					<th class="col-xs-1"> 用时 </th>
+					<th class="col-xs-1"> 内存 </th>
+					<th class="col-xs-1"> 代码长度 </th>
+				</tr>
+				<tr>
+					%s
+				</tr>
+			</table>
+			<table class="table table-bordered">
+				<tr>
+					<th class="col-xs-6"> 提交时间 </th>
+					<th class="col-xs-6"> 评测时间 </th>
+				</tr>
+				<tr>
+					%s
+				</tr>
+			</table>
+			
+			<div class="row">
+				<label for="result"> 评测结果 </label>
+				<textarea id="result" class="form-control" rows="8" readonly>%s</textarea>
+				<br />
+				
+				<label for="code"> 代码 </label>
+				<textarea id="code" class="form-control" rows="20" readonly>%s</textarea>
+				<br />
+			</div>
+		</div>
+	</div>

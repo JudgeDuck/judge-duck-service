@@ -435,7 +435,7 @@ def update_submission(sid):
 		"code_length_text": "N/A",
 		"name": player_name,
 		"submit_time": submit_time,
-		"judge_time": utils.get_file_mtime(path_result + "%d.txt" % sid, "")
+		"judge_time": utils.get_file_mtime(path_result + "%d.txt" % sid, "N/A")
 	}
 	
 	sub["code_length_text"] = utils.render_code_length(sub["code_length"])
@@ -463,6 +463,8 @@ def update_submission(sid):
 			memory_kb = utils.parse_int(s[memory_kb_prefix_len:])
 			sub["memory"] = memory_kb
 			sub["memory_text"] = utils.render_memory_kb(memory_kb)
+		if s.find("compile error") != -1:
+			sub["status"] = "Compile Error"
 	if ok1 and ok2 and time_ms != None:
 		if time_ms > 0 and time_ms < 100 * 1000:
 			sub["status"] = "Accepted"
