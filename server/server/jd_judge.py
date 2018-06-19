@@ -11,12 +11,12 @@ from . import jd_utils as utils
 
 
 def do_judge(sid):
-	sub = db.get_submission(sid)
+	sub = db.do_get_submission(sid)
 	if sub == None:
 		print("咕咕咕咕咕咕，好像没有 %s 这条提交记录啊" % sid)
 		return
 	pid = sub["pid"]
-	pinfo = db.get_problem_info(pid)
+	pinfo = db.do_get_problem_info(pid)
 	if pinfo == None:
 		print("咕咕咕咕咕，在测提交记录 %s 的函数，发现好像没有 %s 这道题啊" % (sid, pid))
 		return
@@ -53,6 +53,7 @@ def do_judge(sid):
 	db.update_submission(sid)
 
 def judge_server_thread_func():
+	print("jd judge server started")
 	while True:
 		time.sleep(1)
 		files = utils.list_dir(db.path_pending)
@@ -64,12 +65,12 @@ def judge_server_thread_func():
 					min_id = id
 		if min_id == -1:
 			continue
-		print("[new_oj] judging id = %d" % min_id)
+		print("[jd] judging id = %d" % min_id)
 		try:
 			do_judge(min_id)
 		except:
-			print("[new_oj] judge failed !!!!!!!")
-		print("[new_oj] judge done, id = %d" % min_id)
+			print("[jd] judge failed !!!!!!!")
+		print("[jd] judge done, id = %d" % min_id)
 		try:
 			os.remove(db.path_pending + "%d.txt" % min_id)
 		except:
@@ -87,4 +88,4 @@ class myThread(threading.Thread):
 		self.func()
 
 judge_server_thread = myThread("judgesrv", judge_server_thread_func)
-# judge_server_thread.start()
+judge_server_thread.start()

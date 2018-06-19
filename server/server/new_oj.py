@@ -228,7 +228,7 @@ class myThread(threading.Thread):
 		self.func()
 
 judge_server_thread = myThread("judgesrv", judge_server_thread_func)
-judge_server_thread.start()
+#judge_server_thread.start()
 
 
 
