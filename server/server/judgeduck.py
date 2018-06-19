@@ -281,6 +281,7 @@ def render_submissions(subs):
 		tmp += "<td style='font-size:13px'> %s </td>" % memory_text
 		tmp += "<td style='font-size:13px'> %s </td>" % code_length_text
 		tmp += "<td style='font-size:13px'> %s </td>" % submit_time
+		tmp += "</tr>"
 		ret.append(tmp)
 	return "\n".join(ret)
 
@@ -337,6 +338,41 @@ def do_submit(req):
 	code = req.POST.get("code", "")
 	return json_response(req, db.do_submit(req, pid, code))
 
+#
+
+def blogs_view(req):
+	# TODO: args
+	blogs = db.do_get_blogs()
+	doc = htmldocs.blogs_htmldoc
+	args = (
+		render_blogs(blogs),
+		"",  # TODO: pagination
+	)
+	return render_view(req, "博客", doc % args)
+
+def render_blogs(blogs):
+	ret = []
+	for blog in blogs:
+		bid = blog["bid"]
+		pid = blog["pid"]
+		title = html.escape(blog["title"])
+		username = blog["username"]
+		post_time = blog["post_time"]
+		n_replies = blog["n_replies"]
+		tmp = "<tr>"
+		tmp += "<td> <a href='/blog/%s'> %s </a> </td>" % (bid, title)
+		tmp += "<td style='font-size:13px'> <a href='/user/profile/%s'> %s </a> </td>" % (username, username)
+		tmp += "<td style='font-size:13px'> %s </td>" % post_time
+		tmp += "<td> %s </td>" % n_replies
+		if pid != "":
+			tmp += "<td> <a href='/problem/%s'> %s </a> </td>" % (pid, pid)
+		else:
+			tmp += "<td> </td>"
+		tmp += "</tr>"
+		ret.append(tmp)
+	return "\n".join(ret)
+
+
 
 
 
@@ -390,6 +426,9 @@ def entry(req):
 		return submission_view(req)
 	if path == "/do_submit":
 		return do_submit(req)
+	
+	if path == "/blogs":
+		return blogs_view(req)
 	
 	raise Http404()
 #

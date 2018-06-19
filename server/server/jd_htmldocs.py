@@ -45,6 +45,8 @@ submissions_my_button = """
 
 submission_htmldoc = utils.read_file(path_htmldocs + "submission.html")
 
+blogs_htmldoc = utils.read_file(path_htmldocs + "blogs.html")
+
 
 
 

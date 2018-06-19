@@ -11,6 +11,7 @@ path_result = path_prefix + "result/"
 path_pending = path_prefix + "pending/"
 path_pending_rejudge = path_prefix + "pending_rejudge/"
 path_users = path_prefix + "users/"
+path_blogs = path_prefix + "blogs/"
 
 
 import re
@@ -27,6 +28,8 @@ users = None
 problems = None
 submissions = None
 last_sub_id = 0
+blogs = None
+last_blog_id = 0
 
 
 def do_get_problem_list():
@@ -276,6 +279,18 @@ def do_get_submissions(pid, username, score1, score2):
 	lock.release()
 	return ret
 
+#
+
+def do_get_blogs():
+	lock.acquire()
+	global blogs
+	ret = []
+	for bid in reversed(sorted(blogs.keys())):
+		ret.append(blogs[bid])
+	lock.release()
+	return ret
+
+
 
 
 
@@ -289,6 +304,7 @@ def init():
 	init_users()
 	init_problems()
 	init_submissions()
+	init_blogs()
 	lock.release()
 
 def reload():
@@ -526,7 +542,98 @@ def update_submission(sid, new_judge_time = None):
 		sub["score_text"] = "%s" % sub["score"]
 	submissions[sid] = sub
 
+#
 
+def init_blogs():
+	global blogs
+	blogs = {}
+	n_blogs = len(utils.list_dir(path_blogs))
+	global last_blog_id
+	last_blog_id = n_blogs
+	for i in range(n_blogs):
+		update_blog(i)
+	print("loaded %s blogs" % n_blogs)
+
+def update_blog(bid):
+	global blogs
+	foldername = path_blogs + "%s/" % bid
+	metadata_name = foldername + "metadata.txt"
+	metadata_content = utils.read_file(metadata_name, "").split("\n")
+	blog = {
+		"bid": bid,
+		"title": "",
+		"username": "",
+		"pid": "",
+		"post_time": "",
+		"modified_time": "",
+		"sticky_level": 0,
+		"n_replies": 0,
+		"last_reply_id": 0,
+		"replies": [],
+		"content": "",
+	}
+	for s in metadata_content:
+		pos = s.find(" ")
+		if pos == -1:
+			s1 = s
+			s2 = ""
+		else:
+			s1 = s[:pos]
+			s2 = s[pos + 1:]
+		if s1 == "hidden":
+			if blogs.get(bid, None) != None:
+				del blogs[bid]
+			return
+		if s1 == "title":
+			blog["title"] = s2
+		if s1 == "username":
+			blog["username"] = s2
+		if s1 == "pid":
+			blog["pid"] = s2
+		if s1 == "post_time":
+			blog["post_time"] = s2
+		if s1 == "modified_time":
+			blog["modified_time"] = s2
+		if s1 == "last_reply_id":
+			blog["last_reply_id"] = utils.parse_int(s2, 0)
+		if s1 == "sticky_level":
+			blog["sticky_level"] = utils.parse_int(s2, 0)
+	last_reply_id = blog["last_reply_id"]
+	replies_path = foldername + "%s/replies/" % bid
+	reply_metadata_path = foldername + "%s/reply_metadata/" % bid
+	for i in range(1, last_reply_id + 1):
+		reply = {
+			"rid": i,
+			"username": "",
+			"reply_time": "",
+			"content": "",
+		}
+		reply_metadata_content = utils.read_file(reply_metadata_path + "%s.txt" % i, "").split("\n")
+		if (len(reply_metadata_content) == 1) and reply_metadata_content[0] == "":
+			continue
+		has_hidden = False
+		for s in reply_metadata_content:
+			pos = s.find(" ")
+			if pos == -1:
+				s1 = s
+				s2 = ""
+			else:
+				s1 = s[:pos]
+				s2 = s[pos + 1:]
+			if s1 == "hidden":
+				has_hidden = True
+				break
+			if s1 == "username":
+				reply["username"] = s2
+			if s1 == "reply_time":
+				reply["reply_time"] = s2
+		if has_hidden:
+			continue
+		reply["content"] = utils.read_file(replies_path + "%s.txt" % i)
+		blog["replies"].append(reply)
+	blog["n_replies"] = len(blog["replies"])
+	blog["content"] = utils.read_file(foldername + "content.md")
+	blogs[bid] = blog
 
 
 
