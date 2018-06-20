@@ -364,6 +364,55 @@ def do_post_blog(req, title, content):
 	ret["bid"] = bid
 	return ret
 
+def do_edit_blog(req, bid, title, content):
+	ret = {"status": "failed"}
+	lock.acquire()
+	username = req.session.get("username", None)
+	if username == None:
+		lock.release()
+		ret["error"] = "请先登录"
+		return ret
+	global blogs
+	blog = blogs.get(bid, None)
+	if blog == None:
+		lock.release()
+		ret["error"] = "博客不存在"
+		return ret
+	title = title.split("\n")[0].split("\r")[0]
+	if title == "":
+		lock.release()
+		ret["error"] = "标题为空"
+		return ret
+	if len(title) > 50:
+		lock.release()
+		ret["error"] = "标题太长"
+		return ret
+	if len(content) > 65536:
+		lock.release()
+		ret["error"] = "内容太长"
+		return ret
+	# Write to file
+	foldername = path_blogs + "%s/" % bid
+	meta_content = utils.read_file(foldername + "metadata.txt").split("\n")
+	meta = [
+		"modified_time %s" % utils.get_current_time(),
+		"title %s" % title,
+	]
+	for s in meta_content:
+		tmp = s.split(" ")[0]
+		if tmp == "modified_time":
+			continue
+		if tmp == "title":
+			continue
+		meta.append(s)
+	utils.write_file(path_temp + "blog_meta.txt", "\n".join(meta))
+	utils.write_file(path_temp + "blog_content.txt", content)
+	utils.rename(path_temp + "blog_content.txt", foldername + "content.md")
+	utils.rename(path_temp + "blog_meta.txt", foldername + "metadata.txt")
+	update_blog(bid)
+	lock.release()
+	ret["status"] = "success"
+	return ret
 
 
 

@@ -1,0 +1,29 @@
+	<div class="row">
+		<h2> 修改博客 </h2>
+		<hr />
+		<div class="row">
+			<div class="col-xs-12">
+				<label for="title"> 标题 </label>
+				<input type="hidden" id="bid" value="%s" />
+				<input type="text" class="form-control" id="title" maxlength="50" value="%s" />
+				<br />
+				
+				<textarea id="content" rows="10"></textarea>
+				
+				<script>
+					var simplemde = new SimpleMDE({
+						element: $("#content")[0],
+						spellChecker: false,
+						renderingConfig: {
+							singleLineBreaks: false
+						}
+					});
+					simplemde.value(%s);
+				</script>
+				
+				<a href="javascript:judgeduck.edit_blog()" id="btn_edit_blog" class="btn btn-md btn-default"> 保存 </a>
+				<br />
+			</div>
+		</div>
+		<br />
+	</div>

@@ -431,13 +431,26 @@ def blog_view(req):
 	blog = db.do_get_blog(bid)
 	if blog == None:
 		raise Http404()
-	return render_view(req, "%s - 博客" % blog["title"], render_blog(blog))
+	return render_view(req, "%s - 博客" % blog["title"], render_blog(req, blog))
 
-def render_blog(blog):
-	ret = "<h2> %s </h2>" % html.escape(blog["title"])
+def render_blog(req, blog):
+	username = blog["username"]
+	post_time = blog["post_time"]
+	modified_time = blog["modified_time"]
+	bid = blog["bid"]
+	
+	ret = "<h2>"
+	ret += " %s " % html.escape(blog["title"])
+	ret += "</h2>"
+	ret += "<p>"
+	ret += "由 <a href='/user/profile/%s'> %s </a> 于 %s 发表" % (username, username, post_time)
+	if modified_time > post_time:
+		ret += "，最后修改于 %s" % modified_time
+	if req.session.get("username", "") == username:
+		ret += "&nbsp; <a href='/blog/%s/edit'>修改</a>" % bid
+	ret += "</p>"
 	ret += "<hr />"
 	ret += markdown2.markdown(blog["content"])
-	ret += "<hr />"
 	return ret
 
 def blog_post_view(req):
@@ -448,6 +461,27 @@ def do_post_blog(req):
 	content = req.POST.get("content", "")
 	return json_response(req, db.do_post_blog(req, title, content))
 
+def blog_edit_view(req):
+	doc = htmldocs.blog_edit_htmldoc
+	username = req.session.get("username", None)
+	if username == None:
+		raise Http404()
+	bid = utils.parse_int(req.path[len("/blog/"):-len("/edit")], -1)
+	blog = db.do_get_blog(bid)
+	if blog == None:
+		raise Http404()
+	args = (
+		bid,
+		html.escape(blog["title"]),
+		json.dumps(blog["content"]),
+	)
+	return render_view(req, "编辑博客", doc % args)
+
+def do_edit_blog(req):
+	bid = utils.parse_int(req.POST.get("bid", "-1"), -1)
+	title = req.POST.get("title", "")
+	content = req.POST.get("content", "")
+	return json_response(req, db.do_edit_blog(req, bid, title, content))
 
 
 
@@ -513,6 +547,10 @@ def entry(req):
 		return blog_post_view(req)
 	if path == "/blog/do_post":
 		return do_post_blog(req)
+	if re.match("^/blog/(0|[1-9][0-9]*)/edit$", path):
+		return blog_edit_view(req)
+	if path == "/blog/do_edit":
+		return do_edit_blog(req)
 	
 	raise Http404()
 #
