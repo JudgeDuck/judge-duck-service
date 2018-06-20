@@ -45,6 +45,21 @@ def entry(req):
 
 #
 
+def handler404(req, exception):
+	host = req.META["HTTP_HOST"]
+	if host == "judge-duck.online":
+		return judgeduck.handle_404(req)
+	if host.split(":")[0] == "local.judge-duck.online":
+		return judgeduck.handle_404(req)
+	return new_oj.handle_404(req)
+
+def handler500(req):
+	host = req.META["HTTP_HOST"]
+	if host == "judge-duck.online":
+		return judgeduck.handle_500(req)
+	if host.split(":")[0] == "local.judge-duck.online":
+		return judgeduck.handle_500(req)
+	return new_oj.handle_500(req)
 
 urlpatterns = [url("", entry)]
 

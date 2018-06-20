@@ -25,6 +25,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.shortcuts import redirect
 from django.http import Http404
+from django.views.defaults import page_not_found, server_error
 from . import old_urls
 import html
 import os
@@ -253,6 +254,12 @@ def entry(req):
 		return old_urls.entry(req)
 	else:
 		raise Http404()
+
+def handle_404(req):
+	return page_not_found(req, None)
+
+def handle_500(req):
+	return server_error(req)
 
 
 #urlpatterns = [

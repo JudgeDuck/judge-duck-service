@@ -490,5 +490,9 @@ def entry(req):
 	raise Http404()
 #
 
+def handle_404(req):
+	return render_view(req, "找不到页面", "<h2> 找不到此页面 </h2> <hr /> <p> 您是从哪里点进来的…… </p>")
 
+def handle_500(req):
+	return render_view(req, "服务器错误", "<h2> 服务器错误 </h2> <hr /> <p> 服务器好像出错了……TAT <br /> 请联系管理员 </p>")
 
