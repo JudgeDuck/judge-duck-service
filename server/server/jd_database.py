@@ -653,6 +653,8 @@ def update_submission(sid, new_judge_time = None):
 			sub["memory_text"] = utils.render_memory_kb(memory_kb)
 		if s.find("compile error") != -1:
 			sub["status"] = "Compile Error"
+		if s.find("link error") != -1:
+			sub["status"] = "Compile Error"
 	if ok1 and ok2 and time_ms != None:
 		if time_ms > 0 and time_ms < 100 * 1000:
 			sub["status"] = "Accepted"
