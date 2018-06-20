@@ -4,6 +4,7 @@
 #include <QTextStream>
 #include <QDataStream>
 #include <QDebug>
+#include <QFile>
 #include <bits/stdc++.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -157,6 +158,13 @@ QString fileContent(string fn)
 	printf("fileContent ok:\n%s", ret.toStdString().c_str());
 	return ret;
 }
+QString localFileContent(QString fn)
+{
+	QFile file(fn);
+	file.open(QIODevice::ReadOnly);
+	QTextStream ts(&file);
+	return ts.readAll();
+}
 
 QTextStream qout(stdout);
 long long time_ns; int mem_kb;
@@ -180,9 +188,12 @@ QString judgeFile()
 	qout << "compiling...\n";
 	qout.flush();
 	
-	if(system((GCC + "contestant.o contestant.c > gcc_contestant.log").c_str())) return "contestant compile error";
-	if(system((GCC + "tasklib.o tasklib.c > gcc_tasklib.log").c_str())) return "tasklib compile error";
-	if(system("ld -o judging -T /home/yjp/OS2018spring-projects-g04/user/user.ld -m elf_i386 -nostdlib /home/yjp/OS2018spring-projects-g04/obj/lib/entry.o contestant.o tasklib.o -L/home/yjp/OS2018spring-projects-g04/obj/lib -llwip -ljos /usr/lib/gcc/i686-linux-gnu/5/libgcc.a libopenlibm.a > ld.log")) return "link error";
+	if(system((GCC + "contestant.o contestant.c > gcc_contestant.log 2>&1").c_str()))
+		return "contestant compile error\n" + localFileContent("gcc_contestant.log").left(40);
+	if(system((GCC + "tasklib.o tasklib.c > gcc_tasklib.log 2>&1").c_str()))
+		return "tasklib compile error\n" + localFileContent("gcc_tasklib.log").left(40);
+	if(system("ld -o judging -T /home/yjp/OS2018spring-projects-g04/user/user.ld -m elf_i386 -nostdlib /home/yjp/OS2018spring-projects-g04/obj/lib/entry.o contestant.o tasklib.o -L/home/yjp/OS2018spring-projects-g04/obj/lib -llwip -ljos /usr/lib/gcc/i686-linux-gnu/5/libgcc.a libopenlibm.a > ld.log 2>&1"))
+		return "link error\n" + localFileContent("ld.log").left(40);
 	
 	qout << "compile success!\n";
 	qout.flush();
