@@ -35,6 +35,20 @@ problem_page_submit_htmldoc = """
 				<br />
 """
 
+problem_board_htmldoc = """
+			<table class="table table-hover">
+				<tr>
+					<th class="col-xs-1"> 排名 </th>
+					<th class="col-xs-1"> 提交编号 </th>
+					<th class="col-xs-2"> 用户 </th>
+					<th class="col-xs-2"> 用时 </th>
+					<th class="col-xs-2"> 内存 </th>
+					<th class="col-xs-2"> 代码长度 </th>
+					<th class="col-xs-2"> 提交时间 </th>
+				</tr>
+				%s
+			</table>
+"""
 
 submissions_htmldoc = utils.read_file(path_htmldocs + "submissions.html")
 submissions_my_button = """

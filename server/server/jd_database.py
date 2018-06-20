@@ -115,13 +115,16 @@ def do_get_board(pid):
 		player_name = sub["name"]
 		time_ms = sub["time"]
 		if not (player_name in board_map) or time_ms < board_map[player_name][0]:
-			board_map[player_name] = [time_ms, sub["sid"], player_name, sub["submit_time"], sub["judge_time"]]
+			board_map[player_name] = [time_ms, sub["sid"]]
 	board = []
 	for i in board_map:
 		board.append(board_map[i])
 	board = sorted(board)[:100]
+	ret = []
+	for row in board:
+		ret.append(submissions[row[1]])
 	lock.release()
-	return board
+	return ret
 
 
 def encrypt_password(password):

@@ -162,7 +162,7 @@ def problem_view(req):
 	return render_view(req, "%s - 题目" % pinfo["name"], render_problem(pinfo))
 
 def render_problem(pinfo):
-	ret = "<h2> %s </h2>" % html.escape(pinfo["name"])
+	ret = "<h2> %s <a href='/problem/%s/board' class=' pull-right btn btn-success'> 排行榜 </a> </h2>" % (html.escape(pinfo["name"]), pinfo["pid"])
 	ret += "<hr />"
 	ret += "时间限制： %s <br />" % pinfo["time_limit_text"]
 	ret += "空间限制： %s <br />" % pinfo["memory_limit_text"]
@@ -171,6 +171,45 @@ def render_problem(pinfo):
 	ret += "<hr />"
 	ret += htmldocs.problem_page_submit_htmldoc % (pinfo["pid"], html.escape(pinfo["sample_code"]))
 	return ret
+
+def problem_board_view(req):
+	pid = req.path[len("/problem/"):-len("/board")]
+	pinfo = db.do_get_problem_info(pid)
+	if pinfo == None:
+		raise Http404()
+	board = db.do_get_board(pid)
+	return render_view(req, "%s - 排行榜" % pinfo["name"], render_problem_board(pinfo, board))
+
+def render_problem_board(pinfo, board):
+	ret = "<h2> %s - 排行榜 </h2>" % (html.escape(pinfo["name"]))
+	ret += "<hr />"
+	if len(board) == 0:
+		ret += "<p> 还没有人 AC 呢 </p>"
+		return ret
+	tmp_arr = []
+	rank = 0
+	for sub in board:
+		rank += 1
+		sid = sub["sid"]
+		username = sub["name"]
+		time_text = sub["time_text"]
+		memory_text = sub["memory_text"]
+		code_length_text = sub["code_length_text"]
+		submit_time = sub["submit_time"]
+		
+		tmp = "<tr>"
+		tmp += "<td> %s </td>" % rank
+		tmp += "<td> <a href='/submission/%s'> %s </a> </td>" % (sid, sid)
+		tmp += "<td style='font-size:13px'> <a href='/user/profile/%s'> %s </a> </td>" % (username, username)
+		tmp += "<td style='font-size:13px'> %s </td>" % time_text
+		tmp += "<td style='font-size:13px'> %s </td>" % memory_text
+		tmp += "<td style='font-size:13px'> %s </td>" % code_length_text
+		tmp += "<td style='font-size:13px'> %s </td>" % submit_time
+		tmp += "</tr>"
+		tmp_arr.append(tmp)
+	
+	tmp = htmldocs.problem_board_htmldoc % "\n".join(tmp_arr)
+	return ret + tmp
 
 def submissions_view(req):
 	pid = req.GET.get("pid", "")
@@ -432,7 +471,9 @@ def entry(req):
 	
 	if path == "/problems":
 		return problems_view(req)
-	if re.match("^/problem/.*$", path):
+	if re.match("^/problem/[^/]+/board$", path):
+		return problem_board_view(req)
+	if re.match("^/problem/[^/]+$", path):
 		return problem_view(req)
 	if path == "/submissions":
 		return submissions_view(req)
