@@ -37,7 +37,7 @@ from . import judgeduck
 @csrf_exempt
 def entry(req):
 	host = req.META["HTTP_HOST"]
-	if host == "judge-duck.online:10086":
+	if host == "judge-duck.online":
 		return judgeduck.entry(req)
 	if host.split(":")[0] == "local.judge-duck.online":
 		return judgeduck.entry(req)
