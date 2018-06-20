@@ -290,6 +290,12 @@ def do_get_blogs():
 	lock.release()
 	return ret
 
+def do_get_blog(bid):
+	lock.acquire()
+	global blogs
+	ret = blogs.get(bid, None)
+	lock.release()
+	return ret
 
 
 

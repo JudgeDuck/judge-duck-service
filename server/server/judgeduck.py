@@ -372,6 +372,20 @@ def render_blogs(blogs):
 		ret.append(tmp)
 	return "\n".join(ret)
 
+def blog_view(req):
+	bid = utils.parse_int(req.path[len("/blog/"):], -1)
+	blog = db.do_get_blog(bid)
+	if blog == None:
+		raise Http404()
+	return render_view(req, "%s - 博客" % blog["title"], render_blog(blog))
+
+def render_blog(blog):
+	ret = "<h2> %s </h2>" % html.escape(blog["title"])
+	ret += "<hr />"
+	ret += markdown2.markdown(blog["content"])
+	ret += "<hr />"
+	return ret
+
 
 
 
@@ -429,6 +443,8 @@ def entry(req):
 	
 	if path == "/blogs":
 		return blogs_view(req)
+	if re.match("^/blog/(0|[1-9][0-9]*)$", path):
+		return blog_view(req)
 	
 	raise Http404()
 #
