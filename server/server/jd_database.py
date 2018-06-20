@@ -300,6 +300,21 @@ def do_get_blog(bid):
 	lock.release()
 	return ret
 
+def do_get_notices():
+	lock.acquire()
+	global blogs
+	tmp = []
+	for blog in blogs.values():
+		if blog["sticky_level"] <= 0:
+			continue
+		tmp.append((blog["sticky_level"], -blog["bid"]))
+	tmp = sorted(tmp)[:5]
+	ret = []
+	for row in tmp:
+		ret.append(blogs[-row[1]])
+	lock.release()
+	return ret
+
 
 
 

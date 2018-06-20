@@ -63,7 +63,22 @@ def json_response(req, info):
 	return HttpResponse(json.dumps(info), content_type="application/json")
 
 def index_view(req):
-	return render_view(req, "", htmldocs.index_htmldoc)
+	return render_view(req, "", htmldocs.index_htmldoc % render_notices())
+
+def render_notices():
+	notices = db.do_get_notices()
+	ret = []
+	for blog in notices:
+		bid = blog["bid"]
+		title = html.escape(blog["title"])
+		post_time = blog["post_time"]
+		
+		tmp = "<tr>"
+		tmp += "<td> <a href='/blog/%s'> %s </a> </td>" % (bid, title)
+		tmp += "<td> %s </td>" % post_time
+		tmp += "</tr>"
+		ret.append(tmp)
+	return "\n".join(ret)
 
 def faq_view(req):
 	faq_content = utils.read_file("jd_data/faq.md")
