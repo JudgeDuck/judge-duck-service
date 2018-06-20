@@ -194,6 +194,13 @@ QString judgeFile()
 		return "tasklib compile error\n" + localFileContent("gcc_tasklib.log").left(40);
 	if(system("ld -o judging -T /home/yjp/OS2018spring-projects-g04/user/user.ld -m elf_i386 -nostdlib /home/yjp/OS2018spring-projects-g04/obj/lib/entry.o contestant.o tasklib.o -L/home/yjp/OS2018spring-projects-g04/obj/lib -llwip -ljos /usr/lib/gcc/i686-linux-gnu/5/libgcc.a libopenlibm.a > ld.log 2>&1"))
 		return "link error\n" + localFileContent("ld.log").left(40);
+	system("size judging > size.out");
+	FILE *fin = fopen("size.out", "r");
+	unsigned dat = 1 << 30, bss = 1 << 30;
+	fscanf(fin, "%*s%*s%*s%*s%*s%*s%*s%d%d", &data, &bss);
+	if(data + bss > (1536u << 20))
+		return "too large global variables";
+	fclose(fin);
 	
 	qout << "compile success!\n";
 	qout.flush();
