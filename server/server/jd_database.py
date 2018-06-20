@@ -315,6 +315,54 @@ def do_get_notices():
 	lock.release()
 	return ret
 
+def do_post_blog(req, title, content):
+	ret = {"status": "failed"}
+	lock.acquire()
+	username = req.session.get("username", None)
+	if username == None:
+		lock.release()
+		ret["error"] = "请先登录"
+		return ret
+	title = title.split("\n")[0].split("\r")[0]
+	if title == "":
+		lock.release()
+		ret["error"] = "标题为空"
+		return ret
+	if len(title) > 50:
+		lock.release()
+		ret["error"] = "标题太长"
+		return ret
+	if len(content) > 65536:
+		lock.release()
+		ret["error"] = "内容太长"
+		return ret
+	# Write to file
+	fname_content = path_temp + "blog_content.txt"
+	utils.write_file(fname_content, content)
+	fname_metadata = path_temp + "blog_metadata.txt"
+	tmp = ""
+	tmp += "title %s\n" % title
+	tmp += "username %s\n" % username
+	cur_time = utils.get_current_time()
+	tmp += "post_time %s\n" % cur_time
+	tmp += "modified_time %s\n" % cur_time
+	tmp += "last_reply_id 0\n"
+	utils.write_file(fname_metadata, tmp)
+	global last_blog_id
+	bid = last_blog_id
+	last_blog_id += 1
+	
+	utils.mkdir(path_blogs + "%s" % bid)
+	foldername = path_blogs + "%s/" % bid
+	utils.mkdir(foldername + "replies")
+	utils.mkdir(foldername + "reply_metadata")
+	utils.rename(fname_content, foldername + "content.md")
+	utils.rename(fname_metadata, foldername + "metadata.txt")
+	update_blog(bid)
+	lock.release()
+	ret["status"] = "success"
+	ret["bid"] = bid
+	return ret
 
 
 

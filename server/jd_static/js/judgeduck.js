@@ -159,6 +159,38 @@ var judgeduck = function() {
 		});
 	};
 	
+	var do_post_blog = function(title, content) {
+		if (title == "") {
+			return alert("发表失败：标题为空");
+		}
+		if (title.length > 50) {
+			return alert("发表失败：标题太长");
+		}
+		do_post("/blog/do_post", {
+			title: title,
+			content: content
+		}, function(data) {
+			var ret = function(data) {
+				if (!data) {
+					return alert("发表失败：网络错误");
+				}
+				if (data["status"] == "success") {
+					return true;
+				}
+				if (data["status"] == "failed") {
+					return alert("发表失败：" + data["error"]);
+				}
+				return alert("发表失败：未知错误");
+			}(data);
+			if (ret) {
+				window.location = "/blog/" + data["bid"];
+			} else {
+				$("#btn_post_blog").attr("disabled", false);
+				$("#title").focus();
+			}
+		});
+	};
+	
 	var register = function() {
 		var user = $("#username").val();
 		var email = $("#email").val();
@@ -198,10 +230,21 @@ var judgeduck = function() {
 		do_submit(pid, code);
 	};
 	
+	var post_blog = function() {
+		var title = $("#title").val();
+		var content = simplemde.value();
+		$("#btn_post_blog").attr("disabled", true);
+		if (!do_post_blog(title, content)) {
+			$("#btn_post_blog").attr("disabled", false);
+			$("#title").focus();
+		}
+	};
+	
 	return {
 		register: register,
 		login: login,
 		edit_profile: edit_profile,
-		submit: submit
+		submit: submit,
+		post_blog: post_blog
 	};
 }();

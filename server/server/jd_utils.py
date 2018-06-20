@@ -6,6 +6,18 @@ import time
 import datetime
 
 
+def rename(name1, name2):
+	try:
+		os.rename(name1, name2)
+	except:
+		pass
+
+def mkdir(name):
+	try:
+		os.mkdir(name)
+	except:
+		pass
+
 def list_dir(name):
 	try:
 		return os.listdir(name)

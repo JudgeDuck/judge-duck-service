@@ -418,10 +418,10 @@ def render_blogs(blogs):
 		tmp += "<td style='font-size:13px'> <a href='/user/profile/%s'> %s </a> </td>" % (username, username)
 		tmp += "<td style='font-size:13px'> %s </td>" % post_time
 		tmp += "<td> %s </td>" % n_replies
-		if pid != "":
-			tmp += "<td> <a href='/problem/%s'> %s </a> </td>" % (pid, pid)
-		else:
-			tmp += "<td> </td>"
+		#if pid != "":
+		#	tmp += "<td> <a href='/problem/%s'> %s </a> </td>" % (pid, pid)
+		#else:
+		#	tmp += "<td> </td>"
 		tmp += "</tr>"
 		ret.append(tmp)
 	return "\n".join(ret)
@@ -439,6 +439,14 @@ def render_blog(blog):
 	ret += markdown2.markdown(blog["content"])
 	ret += "<hr />"
 	return ret
+
+def blog_post_view(req):
+	return render_view(req, "发表新博客", htmldocs.blog_post_htmldoc)
+
+def do_post_blog(req):
+	title = req.POST.get("title", "")
+	content = req.POST.get("content", "")
+	return json_response(req, db.do_post_blog(req, title, content))
 
 
 
@@ -501,6 +509,10 @@ def entry(req):
 		return blogs_view(req)
 	if re.match("^/blog/(0|[1-9][0-9]*)$", path):
 		return blog_view(req)
+	if path == "/blog/post":
+		return blog_post_view(req)
+	if path == "/blog/do_post":
+		return do_post_blog(req)
 	
 	raise Http404()
 #

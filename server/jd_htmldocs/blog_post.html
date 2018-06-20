@@ -1,0 +1,27 @@
+	<div class="row">
+		<h2> 发表新博客 </h2>
+		<hr />
+		<div class="row">
+			<div class="col-xs-12">
+				<label for="title"> 标题 </label>
+				<input type="text" class="form-control" id="title" maxlength="50" />
+				<br />
+				
+				<textarea id="content" rows="10"></textarea>
+				
+				<script>
+					var simplemde = new SimpleMDE({
+						element: $("#content")[0],
+						spellChecker: false,
+						renderingConfig: {
+							singleLineBreaks: false
+						}
+					});
+				</script>
+				
+				<a href="javascript:judgeduck.post_blog()" id="btn_post_blog" class="btn btn-md btn-default"> 发表 </a>
+				<br />
+			</div>
+		</div>
+		<br />
+	</div>
