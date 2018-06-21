@@ -21,30 +21,35 @@ def do_judge(sid):
 		print("咕咕咕咕咕，在测提交记录 %s 的函数，发现好像没有 %s 这道题啊" % (sid, pid))
 		return
 	code = utils.read_file(db.path_code + "%s.txt" % sid)
-	fcode = open("contestant.c", "w")
-	fcode.write(code)
-	fcode.close()
-	finput = open("input.txt", "w")
-	input_content = utils.read_file(db.path_problems + "%s/input.txt" % pid)
-	finput.write(input_content)
-	finput.close()
-	flib = open("tasklib.c", "w")
-	flib.write(utils.read_file(db.path_problems + "%s/tasklib.c" % pid))
-	flib.close()
-	for filename in pinfo["files"]:
-		f = open(filename, "w")
-		f.write(utils.read_file(db.path_problems + ("%s/" % pid) + filename))
-		f.close()
-	TL = "%s" % pinfo["time_limit"]
-	ML = "%s" % pinfo["memory_limit"]
-	print("run tl = %s ml = %s" % (TL, ML))
-	try:
-		cp = subprocess.run(["../judgesrv", TL, ML], stdout=subprocess.PIPE, timeout=20)
-		result = str(cp.stdout, "utf-8")
-		if result == "":
-			result = "咕咕咕，评测机好像炸了"
-	except:
-		result = "咕咕咕，评测失败"
+	ok = True
+	if code.find("/dev/random") != -1:
+		ok = False
+		result = "咕咕咕，非常抱歉！您的代码有可能危害鸭子的生命安全，不予评测"
+	if ok:
+		fcode = open("contestant.c", "w")
+		fcode.write(code)
+		fcode.close()
+		finput = open("input.txt", "w")
+		input_content = utils.read_file(db.path_problems + "%s/input.txt" % pid)
+		finput.write(input_content)
+		finput.close()
+		flib = open("tasklib.c", "w")
+		flib.write(utils.read_file(db.path_problems + "%s/tasklib.c" % pid))
+		flib.close()
+		for filename in pinfo["files"]:
+			f = open(filename, "w")
+			f.write(utils.read_file(db.path_problems + ("%s/" % pid) + filename))
+			f.close()
+		TL = "%s" % pinfo["time_limit"]
+		ML = "%s" % pinfo["memory_limit"]
+		print("run tl = %s ml = %s" % (TL, ML))
+		try:
+			cp = subprocess.run(["../judgesrv", TL, ML], stdout=subprocess.PIPE, timeout=20)
+			result = str(cp.stdout, "utf-8")
+			if result == "":
+				result = "咕咕咕，评测机好像炸了"
+		except:
+			result = "咕咕咕，评测失败"
 	print("result = %s" % result)
 	fres = open(db.path_temp + "judge_res.txt", "w")
 	fres.write(result)
