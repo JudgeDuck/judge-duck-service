@@ -196,9 +196,9 @@ QString judgeFile()
 		return "link error\n" + localFileContent("ld.log").left(40);
 	system("size judging > size.out");
 	FILE *fin = fopen("size.out", "r");
-	unsigned dat = 1 << 30, bss = 1 << 30;
+	unsigned data = 1 << 30, bss = 1 << 30;
 	fscanf(fin, "%*s%*s%*s%*s%*s%*s%*s%d%d", &data, &bss);
-	if(data + bss > (1536u << 20))
+	if(data + bss > (1280u << 20))
 		return "too large global variables";
 	fclose(fin);
 	
