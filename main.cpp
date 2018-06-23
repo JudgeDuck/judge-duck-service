@@ -176,13 +176,6 @@ QString judgeFile()
 	if(sz <= 0) return "source too small";
 	if(sz >= 10000) return "source too large";
 	
-	qDebug() << sock.bind(8008);
-	sock.connectToHost("172.29.8.241", 8000);
-	qDebug() << sock.waitForConnected();
-	ts.setDevice(&sock);
-	ds.setDevice(&sock);
-	sendFile("input.txt", "input.txt");
-	
 	string GCC = "ulimit -v 131072 && gcc -pipe -nostdinc -O2 -fno-builtin -MD -fno-omit-frame-pointer -std=gnu99 -static -Wall -Wno-format -Wno-unused -Werror -gstabs -m32 -fno-tree-ch -fno-stack-protector -Iinclude -I/home/yjp/OS2018spring-projects-g04/ -I/home/yjp/OS2018spring-projects-g04/net/lwip/include -I/home/yjp/OS2018spring-projects-g04/net/lwip/include/ipv4 -I/home/yjp/OS2018spring-projects-g04/net/lwip/jos -DJOS_USER -gstabs -c -o ";
 	
 	qout << "compiling...\n";
@@ -204,6 +197,13 @@ QString judgeFile()
 	
 	qout << "compile success!\n";
 	qout.flush();
+	
+	qDebug() << sock.bind(8008);
+	sock.connectToHost("172.29.8.241", 8000);
+	qDebug() << sock.waitForConnected();
+	ts.setDevice(&sock);
+	ds.setDevice(&sock);
+	sendFile("input.txt", "input.txt");
 	
 	sz = fileSize("judging");
 	if(sz <= 0) return "binary too small";
