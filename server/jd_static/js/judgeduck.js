@@ -1,7 +1,7 @@
 // This is the judgeduck js lib
 
 var judgeduck = function() {
-	var timeout = 2000;
+	var timeout = 10000;
 	var user_regex = /^[a-zA-Z0-9_]{3,20}$/;
 	var email_regex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 	var pass_regex = /^.{1,100}$/;
