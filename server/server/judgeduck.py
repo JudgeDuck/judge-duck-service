@@ -502,6 +502,12 @@ def entry(req):
 	if path[:8] == "/images/":
 		return static_view_serve(req, path = path[8:], document_root = "./jd_static/images")
 	
+	if path == "/rerererereload":
+		jd_judge.judge_lock.acquire()
+		db.init()
+		jd_judge.judge_lock.release()
+		return HttpResponseRedirect("/")
+	
 	if path == "/":
 		return index_view(req)
 	if path == "/faq":

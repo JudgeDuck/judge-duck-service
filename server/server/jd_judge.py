@@ -10,6 +10,8 @@ from . import jd_database as db
 from . import jd_utils as utils
 
 
+judge_lock = threading.Lock()
+
 def do_judge(sid):
 	sub = db.do_get_submission(sid)
 	if sub == None:
@@ -61,6 +63,7 @@ def judge_server_thread_func():
 	print("jd judge server started")
 	while True:
 		time.sleep(1)
+		judge_lock.acquire()
 		files = utils.list_dir(db.path_pending)
 		min_id = -1
 		for filename in files:
@@ -69,6 +72,7 @@ def judge_server_thread_func():
 				if id != -1 and (min_id == -1 or id < min_id):
 					min_id = id
 		if min_id == -1:
+			judge_lock.release()
 			continue
 		print("[jd] judging id = %d" % min_id)
 		try:
@@ -80,6 +84,7 @@ def judge_server_thread_func():
 			os.remove(db.path_pending + "%d.txt" % min_id)
 		except:
 			pass
+		judge_lock.release()
 
 
 
