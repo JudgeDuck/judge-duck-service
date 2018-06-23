@@ -37,7 +37,7 @@ from . import judgeduck
 @csrf_exempt
 def entry(req):
 	host = req.META["HTTP_HOST"]
-	if host == "judge-duck.online":
+	if host.split(":")[0] == "judge-duck.online":
 		return judgeduck.entry(req)
 	if host.split(":")[0] == "local.judge-duck.online":
 		return judgeduck.entry(req)
@@ -47,7 +47,7 @@ def entry(req):
 
 def handler404(req, exception):
 	host = req.META["HTTP_HOST"]
-	if host == "judge-duck.online":
+	if host.split(":")[0] == "judge-duck.online":
 		return judgeduck.handle_404(req)
 	if host.split(":")[0] == "local.judge-duck.online":
 		return judgeduck.handle_404(req)
@@ -55,7 +55,7 @@ def handler404(req, exception):
 
 def handler500(req):
 	host = req.META["HTTP_HOST"]
-	if host == "judge-duck.online":
+	if host.split(":")[0] == "judge-duck.online":
 		return judgeduck.handle_500(req)
 	if host.split(":")[0] == "local.judge-duck.online":
 		return judgeduck.handle_500(req)
