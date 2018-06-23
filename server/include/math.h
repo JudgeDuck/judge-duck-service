@@ -1,4 +1,7 @@
 #pragma once
+#ifdef __cplusplus
+extern "C" {
+#endif
 extern const union __infinity_un {
  unsigned char __uc[8];
  double __ud;
@@ -218,3 +221,6 @@ long double tgammal(long double);
 long double truncl(long double);
 long double lgammal_r(long double, int *);
 void sincosl(long double, long double *, long double *);
+#ifdef __cplusplus
+}
+#endif
