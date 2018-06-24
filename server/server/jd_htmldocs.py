@@ -27,12 +27,24 @@ problems_problem = """
 
 
 problem_page_submit_htmldoc = """
-				<input type="hidden" id="pid" value="%s" />
-				<label for="code"> 你的代码 </label>
-				<textarea id="code" class="form-control" rows="10">%s</textarea>
-				<br />
-				<a href="javascript:judgeduck.submit()" id="btn_submit" class="btn btn-md btn-default"> 提交 </a>
-				<br />
+				<div class="row">
+					<input type="hidden" id="pid" value="%s" />
+					<div class="col-xs-3 form-group">
+						<label for="language"> 语言 </label>
+						<select class="form-control" id="language">
+							%s
+						</select>
+					</div>
+					<div class="col-xs-12 form-group">
+						<label for="code"> 你的代码 </label>
+						<textarea id="code" class="form-control" rows="10">%s</textarea>
+						<br />
+					</div>
+					<div class="col-xs-12 form-group">
+						<a href="javascript:judgeduck.submit()" id="btn_submit" class="btn btn-md btn-default"> 提交 </a>
+					</div>
+					<br />
+				</div>
 """
 
 problem_board_htmldoc = """

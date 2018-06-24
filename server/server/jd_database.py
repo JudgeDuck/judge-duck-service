@@ -13,6 +13,12 @@ path_pending_rejudge = path_prefix + "pending_rejudge/"
 path_users = path_prefix + "users/"
 path_blogs = path_prefix + "blogs/"
 
+option_languages = [
+	"C",
+	"C++",
+	"C++11",
+]
+
 
 import re
 from random import *
@@ -49,14 +55,22 @@ def do_get_problem_info(pid):
 #
 
 # return json
-def do_submit(req, pid, code):
+def do_submit(req, pid, language, code):
 	ret = {"status": "failed"}
 	name = req.session.get("username", None)
 	if name == None:
 		ret["error"] = "请先登录"
 		return ret
 	
+	if not (language in option_languages):
+		ret["error"] = "语言不存在"
+		return ret
+	
 	lock.acquire()
+	user = users.get(name, None)
+	user["language"] = language
+	write_user_profile(user)
+	
 	pinfo = problems.get(pid, None)
 	if pinfo == None:
 		lock.release()
@@ -78,6 +92,7 @@ def do_submit(req, pid, code):
 		meta = "player_name %s\n" % name
 		meta += "submit_time %s\n" % utils.get_current_time()
 		meta += "pid %s\n" % pid
+		meta += "language %s\n" % language
 		utils.write_file(path_temp + "meta.txt", meta)
 		os.rename(path_temp + "meta.txt", path_metadata + "%d.txt" % sid)
 		os.rename(path_temp + "code.txt", path_code + "%d.txt" % sid)
@@ -452,11 +467,13 @@ def add_user(username):
 		"email": "",
 		"password": "",
 		"signature": "",
+		"language": "C++",
 	}
 	keys = [
 		"email",
 		"password",
 		"signature",
+		"language",
 	]
 	for s in content:
 		match_k = None
@@ -527,7 +544,7 @@ def add_problem(pid):
 				val = val.split(" ")
 			prob[match_k] = val
 	prob["statement"] = utils.read_file(path + "statement.md", "咕咕咕")
-	prob["sample_code"] = utils.read_file(path + "sample.c", "咕咕咕")
+	prob["sample_code"] = utils.read_file(path + "sample.cpp", "咕咕咕")
 	prob["time_limit_text"] = utils.render_time_ns(int(prob["time_limit"]))
 	prob["memory_limit_text"] = utils.render_memory_kb(int(prob["memory_limit"]))
 	problems[pid] = prob
@@ -585,7 +602,9 @@ def update_submission(sid, new_judge_time = None):
 		"player_name",
 		"submit_time",
 		"pid",
+		"language",
 	]
+	language = "C"
 	for s in metadata_content:
 		if s == "hidden":
 			if submissions.get(sid, None) != None:
@@ -608,6 +627,8 @@ def update_submission(sid, new_judge_time = None):
 			player_name = match_content
 		if match_k == "pid":
 			pid = match_content
+		if match_k == "language":
+			language = match_content
 	
 	
 	#if code_first_row[:len(name_magic)] == name_magic:
@@ -628,6 +649,7 @@ def update_submission(sid, new_judge_time = None):
 		"name": player_name,
 		"submit_time": submit_time,
 		"judge_time": judge_time,
+		"language": language,
 	}
 	
 	sub["code_length_text"] = utils.render_code_length(sub["code_length"])

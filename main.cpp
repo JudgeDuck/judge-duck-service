@@ -170,7 +170,7 @@ QTextStream qout(stdout);
 long long time_ns; int mem_kb;
 
 // fn = ***.c
-QString judgeFile()
+QString judgeFile(string language)
 {
 	size_t sz = fileSize("contestant.c");
 	if(sz <= 0) return "source too small";
@@ -178,10 +178,24 @@ QString judgeFile()
 	
 	string GCC = "ulimit -v 131072 && gcc -pipe -nostdinc -O2 -fno-builtin -MD -fno-omit-frame-pointer -std=gnu99 -static -Wall -Wno-format -Wno-unused -gstabs -m32 -fno-tree-ch -fno-stack-protector -Iinclude -I../../ -I../../net/lwip/include -I../../net/lwip/include/ipv4 -I../../net/lwip/jos -DJOS_USER -gstabs -c -o ";
 	
+	string GXX = "ulimit -v 131072 && g++ -pipe -nostdinc -O2 -fno-builtin -MD -fno-omit-frame-pointer -static -Wall -Wno-format -Wno-unused -gstabs -m32 -fno-tree-ch -fno-stack-protector -fno-exceptions -fno-unwind-tables -fno-rtti -fno-threadsafe-statics -Iinclude -I../../ -I../../net/lwip/include -I../../net/lwip/include/ipv4 -I../../net/lwip/jos -DJOS_USER -gstabs -c -o ";
+	
+	string GXX11 = "ulimit -v 131072 && g++ -pipe -nostdinc -O2 -fno-builtin -MD -fno-omit-frame-pointer -std=c++11 -static -Wall -Wno-format -Wno-unused -gstabs -m32 -fno-tree-ch -fno-stack-protector -fno-exceptions -fno-unwind-tables -fno-rtti -fno-threadsafe-statics -Iinclude -I../../ -I../../net/lwip/include -I../../net/lwip/include/ipv4 -I../../net/lwip/jos -DJOS_USER -gstabs -c -o ";
+	
+	string G = GCC;
+	string contestant_filename = "contestant.c";
+	if (language == "C++") {
+		G = GXX;
+		contestant_filename = "contestant.cpp";
+	} else if (language == "C++11") {
+		G = GXX11;
+		contestant_filename = "contestant.cpp";
+	}
+	
 	qout << "compiling...\n";
 	qout.flush();
 	
-	if(system((GCC + "contestant.o contestant.c > gcc_contestant.log 2>&1").c_str()))
+	if(system((G + "contestant.o " + contestant_filename + " > gcc_contestant.log 2>&1").c_str()))
 		return "contestant compile error\n" + localFileContent("gcc_contestant.log").left(40);
 	if(system((GCC + "tasklib.o tasklib.c > gcc_tasklib.log 2>&1").c_str()))
 		return "tasklib compile error\n" + localFileContent("gcc_tasklib.log").left(40);
@@ -225,16 +239,17 @@ int main(int argc, char **argv)
 {
 	QCoreApplication a(argc, argv);
 	
-	if(argc != 3)
+	if(argc != 1 + 3)
 	{
-		qout << "usage: judgesrv [time_ns] [mem_kb]";
+		qout << "usage: judgesrv [time_ns] [mem_kb] [lang]";
 		qout.flush();
 		return 1;
 	}
 	time_ns = atoll(argv[1]);
 	mem_kb = atoi(argv[2]);
+	string language = string(argv[3]);
 	
-	qout << judgeFile();
+	qout << judgeFile(language);
 	qout.flush();
 	
 	return 0;

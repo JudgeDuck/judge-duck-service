@@ -174,9 +174,16 @@ def problem_view(req):
 	pinfo = db.do_get_problem_info(pid)
 	if pinfo == None:
 		raise Http404()
-	return render_view(req, "%s - 题目" % pinfo["name"], render_problem(pinfo))
+	return render_view(req, "%s - 题目" % pinfo["name"], render_problem(req, pinfo))
 
-def render_problem(pinfo):
+def render_problem(req, pinfo):
+	lang = "C++"
+	username = req.session.get("username", None)
+	if username != None:
+		user = db.do_get_user_info(username)
+		lang = user["language"]
+	languages = db.option_languages
+	languages_doc = "\n".join(["<option%s> %s </option>" % (" selected" if k == lang else "", k) for k in languages])
 	ret = "<h2> %s <a href='/problem/%s/board' class=' pull-right btn btn-success'> 排行榜 </a> </h2>" % (html.escape(pinfo["name"]), pinfo["pid"])
 	ret += "<hr />"
 	ret += "时间限制： %s <br />" % pinfo["time_limit_text"]
@@ -184,7 +191,7 @@ def render_problem(pinfo):
 	ret += "<br />"
 	ret += markdown2.markdown(pinfo["statement"])
 	ret += "<hr />"
-	ret += htmldocs.problem_page_submit_htmldoc % (pinfo["pid"], html.escape(pinfo["sample_code"]))
+	ret += htmldocs.problem_page_submit_htmldoc % (pinfo["pid"], languages_doc, html.escape(pinfo["sample_code"]))
 	return ret
 
 def problem_board_view(req):
@@ -329,11 +336,12 @@ def render_submissions(subs):
 		tmp = "<tr>"
 		tmp += "<td> <a href='/submission/%s'> %s </a> </td>" % (sid, sid)
 		tmp += "<td style='font-size:13px'> <a href='/user/profile/%s'> %s </a> </td>" % (username, username)
-		tmp += "<td> <a href='/problem/%s'> %s </a> </td>" % (pid, pid + ". " + pname)
+		tmp += "<td style='font-size:13px'> <a href='/problem/%s'> %s </a> </td>" % (pid, pid)
 		tmp += "<td> %s </td>" % score
 		tmp += "<td style='font-size:13px'> %s </td>" % time_text
 		tmp += "<td style='font-size:13px'> %s </td>" % memory_text
 		tmp += "<td style='font-size:13px'> %s </td>" % code_length_text
+		tmp += "<td style='font-size:13px'> %s </td>" % sub["language"]
 		tmp += "<td style='font-size:13px'> %s </td>" % submit_time
 		tmp += "</tr>"
 		ret.append(tmp)
@@ -366,6 +374,7 @@ def submission_view(req):
 		"<td> %s </td>" % score,
 		"<td style='font-size:13px'> %s </td>" % time_text,
 		"<td style='font-size:13px'> %s </td>" % memory_text,
+		"<td style='font-size:13px'> %s </td>" % sub["language"],
 		"<td style='font-size:13px'> %s </td>" % code_length_text,
 	])
 	
@@ -389,8 +398,9 @@ def submission_view(req):
 
 def do_submit(req):
 	pid = req.POST.get("pid", "")
+	language = req.POST.get("language", "")
 	code = req.POST.get("code", "")
-	return json_response(req, db.do_submit(req, pid, code))
+	return json_response(req, db.do_submit(req, pid, language, code))
 
 #
 

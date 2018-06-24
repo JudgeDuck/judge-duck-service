@@ -133,9 +133,10 @@ var judgeduck = function() {
 		return true;
 	};
 	
-	var do_submit = function(pid, code) {
+	var do_submit = function(pid, language, code) {
 		do_post("/do_submit", {
 			pid: pid,
+			language: language,
 			code: code
 		}, function(data) {
 			var ret = function(data) {
@@ -258,9 +259,10 @@ var judgeduck = function() {
 	
 	var submit = function() {
 		var pid = $("#pid").val();
+		var language = $("#language").val();
 		var code = $("#code").val();
 		$("#btn_submit").attr("disabled", true);
-		do_submit(pid, code);
+		do_submit(pid, language, code);
 	};
 	
 	var post_blog = function() {
