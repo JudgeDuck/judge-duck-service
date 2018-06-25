@@ -39,8 +39,8 @@ def do_judge(sid):
 		input_content = utils.read_file(db.path_problems + "%s/input.txt" % pid)
 		finput.write(input_content)
 		finput.close()
-		flib = open("tasklib.c", "w")
-		flib.write(utils.read_file(db.path_problems + "%s/tasklib.c" % pid))
+		flib = open("tasklib.cpp", "w")
+		flib.write(utils.read_file(db.path_problems + "%s/tasklib.cpp" % pid))
 		flib.close()
 		for filename in pinfo["files"]:
 			f = open(filename, "w")

@@ -192,12 +192,17 @@ QString judgeFile(string language)
 		contestant_filename = "contestant.cpp";
 	}
 	
+	string tasklib_option = "";
+	if (language == "C") {
+		tasklib_option = "-DTASKLIB_USE_C";
+	}
+	
 	qout << "compiling...\n";
 	qout.flush();
 	
 	if(system((G + "contestant.o " + contestant_filename + " > gcc_contestant.log 2>&1").c_str()))
 		return "contestant compile error\n" + localFileContent("gcc_contestant.log").left(40);
-	if(system((GCC + "tasklib.o tasklib.c > gcc_tasklib.log 2>&1").c_str()))
+	if(system((GXX + "tasklib.o tasklib.cpp " + tasklib_option + " > gcc_tasklib.log 2>&1").c_str()))
 		return "tasklib compile error\n" + localFileContent("gcc_tasklib.log").left(40);
 	if(system("ld -o judging -T ../../user/user.ld -m elf_i386 -nostdlib ../../obj/lib/entry.o contestant.o tasklib.o -L../../obj/lib -llwip -ljos /usr/lib/gcc/i686-linux-gnu/5/libgcc.a libopenlibm.a > ld.log 2>&1"))
 		return "link error\n" + localFileContent("ld.log").left(40);
