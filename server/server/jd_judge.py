@@ -29,7 +29,7 @@ def do_judge(sid):
 	if language != "C":
 		code_file_name = "contestant.cpp"
 	ok = True
-	if re.match('#\s*include\s*"/dev/', code):
+	if re.match('.*\#\s*include\s*"/dev/.*', " ".join(" ".join(code.split("\n")).split("\r"))):
 		ok = False
 		result = "咕咕咕，非常抱歉！您的代码有可能危害鸭子的生命安全，不予评测"
 	if ok:
