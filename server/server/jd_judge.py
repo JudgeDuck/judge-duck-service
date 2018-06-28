@@ -4,6 +4,7 @@ import time
 import os
 import subprocess
 import threading
+import re
 
 from . import jd_htmldocs as htmldocs
 from . import jd_database as db
@@ -28,7 +29,7 @@ def do_judge(sid):
 	if language != "C":
 		code_file_name = "contestant.cpp"
 	ok = True
-	if code.find("/dev/random") != -1:
+	if re.match('#\s*include\s*"/dev/', code):
 		ok = False
 		result = "咕咕咕，非常抱歉！您的代码有可能危害鸭子的生命安全，不予评测"
 	if ok:
