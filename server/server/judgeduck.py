@@ -56,7 +56,8 @@ def render_view(req, title, content):
 	else:
 		res.write(htmldocs.header_htmldoc % html.escape(title))
 	res.write(content)
-	res.write(htmldocs.footer_htmldoc % utils.get_current_time())
+	render_time = "%.0lf ms" % ((time.time() - req.jd_start_time) * 1000.0)
+	res.write(htmldocs.footer_htmldoc % (utils.get_current_time(), render_time))
 	return res
 
 def json_response(req, info):

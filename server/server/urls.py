@@ -36,6 +36,7 @@ from . import judgeduck
 
 @csrf_exempt
 def entry(req):
+	req.jd_start_time = time.time()
 	host = req.META["HTTP_HOST"]
 	if host.split(":")[0] == "judge-duck.online":
 		return judgeduck.entry(req)
