@@ -172,15 +172,18 @@ long long time_ns; int mem_kb;
 // fn = ***.c
 QString judgeFile(string language)
 {
-	size_t sz = fileSize("contestant.c");
-	if(sz <= 0) return "source too small";
-	if(sz >= 10000) return "source too large";
+	//size_t sz = fileSize("contestant.c");
+	//if(sz <= 0) return "source too small";
+	//if(sz >= 10000) return "source too large";
+	size_t sz = 0;
 	
-	string GCC = "ulimit -v 131072 && gcc -pipe -nostdinc -O2 -fno-builtin -MD -fno-omit-frame-pointer -std=gnu99 -static -Wall -Wno-format -Wno-unused -gstabs -m32 -fno-tree-ch -fno-stack-protector -Iinclude -I../../ -I../../net/lwip/include -I../../net/lwip/include/ipv4 -I../../net/lwip/jos -DJOS_USER -gstabs -c -o ";
+	string GCC = "ulimit -v 524288 && gcc -DJD_OLD_MEMORY_LIMIT -pipe  -O2  -MD -fno-omit-frame-pointer -static -Wall -Wno-format -Wno-unused -gstabs -m32 -fno-tree-ch -fno-stack-protector -gstabs -c -o ";
 	
-	string GXX = "ulimit -v 131072 && g++ -pipe -nostdinc -O2 -fno-builtin -MD -fno-omit-frame-pointer -static -Wall -Wno-format -Wno-unused -gstabs -m32 -fno-tree-ch -fno-stack-protector -fno-exceptions -fno-unwind-tables -fno-rtti -fno-threadsafe-statics -Iinclude -I../../ -I../../net/lwip/include -I../../net/lwip/include/ipv4 -I../../net/lwip/jos -DJOS_USER -gstabs -c -o ";
+	string GXX = "ulimit -v 524288 && g++ -DJD_OLD_MEMORY_LIMIT -pipe  -O2  -MD -fno-omit-frame-pointer -static -Wall -Wno-format -Wno-unused -gstabs -m32 -fno-tree-ch -fno-stack-protector -fno-exceptions -fno-unwind-tables -fno-rtti -fno-threadsafe-statics -gstabs -c -o ";
 	
-	string GXX11 = "ulimit -v 131072 && g++ -pipe -nostdinc -O2 -fno-builtin -MD -fno-omit-frame-pointer -std=c++11 -static -Wall -Wno-format -Wno-unused -gstabs -m32 -fno-tree-ch -fno-stack-protector -fno-exceptions -fno-unwind-tables -fno-rtti -fno-threadsafe-statics -Iinclude -I../../ -I../../net/lwip/include -I../../net/lwip/include/ipv4 -I../../net/lwip/jos -DJOS_USER -gstabs -c -o ";
+	string GXX11 = "ulimit -v 524288 && g++ -DJD_OLD_MEMORY_LIMIT -pipe  -O2 -std=c++11 -MD -fno-omit-frame-pointer -static -Wall -Wno-format -Wno-unused -gstabs -m32 -fno-tree-ch -fno-stack-protector -fno-exceptions -fno-unwind-tables -fno-rtti -fno-threadsafe-statics -gstabs -c -o ";
+	
+	string GXX_TASKLIB = "ulimit -v 524288 && g++ -DJD_OLD_MEMORY_LIMIT -pipe  -O2  -MD -fno-omit-frame-pointer -static -Wall -Wno-format -Wno-unused -gstabs -m32 -fno-tree-ch -fno-stack-protector -fno-exceptions -fno-unwind-tables -fno-rtti -fno-threadsafe-statics  -I../libtaskduck_include -DJOS_USER -gstabs -c -o ";
 	
 	string G = GCC;
 	string contestant_filename = "contestant.c";
@@ -202,9 +205,9 @@ QString judgeFile(string language)
 	
 	if(system((G + "contestant.o " + contestant_filename + " > gcc_contestant.log 2>&1").c_str()))
 		return "contestant compile error\n" + localFileContent("gcc_contestant.log").left(40);
-	if(system((GXX + "tasklib.o tasklib.cpp " + tasklib_option + " > gcc_tasklib.log 2>&1").c_str()))
+	if(system((GXX_TASKLIB + "tasklib.o tasklib.cpp " + tasklib_option + " > gcc_tasklib.log 2>&1").c_str()))
 		return "tasklib compile error\n" + localFileContent("gcc_tasklib.log").left(40);
-	if(system("ld -o judging -T ../../user/user.ld -m elf_i386 -nostdlib ../../obj/lib/entry.o contestant.o tasklib.o -L../../obj/lib -llwip -ljos /usr/lib/gcc/i686-linux-gnu/5/libgcc.a libopenlibm.a > ld.log 2>&1"))
+	if(system("ld -o judging -T ../judgeduck.ld -m elf_i386 -nostdlib contestant.o ../libstdduck/libstdduck.a libopenlibm.a tasklib.o ../libtaskduck/libtaskduck.a ../libjudgeduck/libjudgeduck.a /usr/lib/gcc/i686-linux-gnu/5/libgcc.a > ld.log 2>&1"))
 		return "link error\n" + localFileContent("ld.log").left(40);
 	system("size judging > size.out");
 	FILE *fin = fopen("size.out", "r");
@@ -226,7 +229,7 @@ QString judgeFile(string language)
 	
 	sz = fileSize("judging");
 	if(sz <= 0) return "binary too small";
-	if(sz >= 131072) return "binary too large";
+	if(sz >= 262144) return "binary too large";
 	
 	sendFile("judging", "judging");
 	runCmd("arbiter judging " + to_string(time_ns) + " " + to_string(mem_kb) + " > arbiter.out");

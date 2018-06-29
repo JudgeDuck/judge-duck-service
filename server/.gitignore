@@ -11,4 +11,6 @@ log
 res.txt
 tasklib.*
 size.out
+compile.sh
+answer.txt
 
