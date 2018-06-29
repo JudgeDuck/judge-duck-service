@@ -1,5 +1,6 @@
 #encoding=utf-8
 
+import markdown2
 from . import jd_utils as utils
 
 path_htmldocs = "jd_htmldocs/"
@@ -26,6 +27,21 @@ problems_problem = """
 """
 
 
+problem_page_cpp_faq = """
+#### 关于 C/C++ 语言的说明
+
+你可以使用 C 语言的标准头文件，但不是所有特性都是支持的。
+
+比如我们目前支持 `getchar`, `putchar` 和 `malloc` 系列函数，暂不支持 `scanf`, `printf` 和 `fseek` 系列函数。
+
+#### 关于 C++ 语言的说明
+
+你可以使用 C++ 语言的各种语法特性，也可以使用 C++ 的标准头文件和 STL 库。
+
+但是，至少有下列 C++ 特性是不支持的：`new` 和 `delete`、全局变量动态初始化、`iostream` 头文件、`std::map` 和 `std::set`。
+
+"""
+
 problem_page_submit_htmldoc = """
 				<div class="row">
 					<input type="hidden" id="pid" value="%s" />
@@ -34,6 +50,9 @@ problem_page_submit_htmldoc = """
 						<select class="form-control" id="language">
 							%s
 						</select>
+					</div>
+					<div class="col-xs-12 form-group">
+						""" + markdown2.markdown(problem_page_cpp_faq) + """
 					</div>
 					<div class="col-xs-12 form-group">
 						<label for="code"> 你的代码 </label>
