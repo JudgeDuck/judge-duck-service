@@ -563,6 +563,8 @@ def init_submissions():
 		update_submission(i)
 
 def update_submission(sid, new_judge_time = None):
+	global submissions
+	global problems
 	name = path_result + "%d.txt" % sid
 	res_str = utils.read_file(name)
 	res_arr = res_str.split("\n")
@@ -657,7 +659,6 @@ def update_submission(sid, new_judge_time = None):
 	if res_str != "":
 		sub["status"] = "Judge Failed"
 	
-	global submissions
 	for s in res_arr:
 		if s == "Correct Answer!":
 			ok1 = True
@@ -682,6 +683,10 @@ def update_submission(sid, new_judge_time = None):
 			sub["status"] = "Accepted"
 	if ok2 and (not ok1):
 		sub["status"] = "Wrong Answer"
+	if ok2 == True:
+		prob = problems.get(pid, None)
+		if (prob != None) and (memory_kb != None) and (memory_kb > prob["memory_limit"]):
+			sub["status"] = "Memory Limit Exceeded"
 	if sub["status"] != "Pending":
 		sub["score"] = 100 if sub["status"] == "Accepted" else 0
 		sub["score_text"] = "%s" % sub["score"]
