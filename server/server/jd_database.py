@@ -660,7 +660,7 @@ def update_submission(sid, new_judge_time = None):
 		sub["status"] = "Judge Failed"
 	
 	for s in res_arr:
-		if s == "Correct Answer!":
+		if (s == "Correct Answer") or (s == "Correct Answer!"):
 			ok1 = True
 		if s[:len("verdict = ")] == "verdict = ":
 			sub["status"] = s[len("verdict = "):]
