@@ -8,7 +8,6 @@ extern "C" {
 static void main_wrapper() {
 	const char *argv[1] = {"judge-duck-program.exe"};
 	main(1, argv);
-	sys_quit_judge();
 }
 
 void TaskDuck::judge() {

@@ -21,7 +21,8 @@ AS := as
 AR := ar
 
 LIB_SRCFILES :=	\
-			exit.S \
+			init_fini.cpp \
+			exit.cpp \
 			malloc.cpp \
 			atoi.cpp \
 			rand.cpp \

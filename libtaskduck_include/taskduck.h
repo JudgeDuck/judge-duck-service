@@ -51,6 +51,4 @@ struct TaskDuck {
 	const char *message;
 };
 
-void quit_judge();
-
 #endif

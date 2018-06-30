@@ -71,6 +71,21 @@ static void finish_judgeduck(TaskDuck *td) {
 	read_file(td, td->answer_filename, td->answer_content, td->answer_size);
 }
 
+static void *real_eip;
+
+extern "C" {
+	extern void exit(int);
+}
+
+static void judge_wrapper() {
+	extern void libstdduck_init();
+	extern void libstdduck_fini();
+	
+	libstdduck_init();
+	((void (*)()) real_eip)();
+	exit(0);
+}
+
 static void do_judge(TaskDuck *td, void *eip) {
 	struct JudgeParams prm;
 	memset(&prm, 0, sizeof(prm));
@@ -85,7 +100,8 @@ static void do_judge(TaskDuck *td, void *eip) {
 	
 	init_judgeduck(td);
 	
-	sys_enter_judge(eip, &prm);
+	real_eip = eip;
+	sys_enter_judge((void *) judge_wrapper, &prm);
 	
 	finish_judgeduck(td);
 	
