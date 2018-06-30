@@ -208,7 +208,7 @@ QString judgeFile(string language)
 	if(system((GXX_TASKLIB + "tasklib.o tasklib.cpp " + tasklib_option + " > gcc_tasklib.log 2>&1").c_str()))
 		return "tasklib compile error\n" + localFileContent("gcc_tasklib.log").left(40);
 	if(system("ld -o judging -T ../judgeduck.ld -m elf_i386 -nostdlib contestant.o ../libstdduck/libstdduck.a libopenlibm.a tasklib.o ../libtaskduck/libtaskduck.a ../libjudgeduck/libjudgeduck.a /usr/lib/gcc/i686-linux-gnu/5/libgcc.a > ld.log 2>&1"))
-		return "link error\n" + localFileContent("ld.log").left(40);
+		return "link error\n" + localFileContent("ld.log").left(1024);
 	system("size judging > size.out");
 	FILE *fin = fopen("size.out", "r");
 	unsigned data = 1 << 30, bss = 1 << 30;
