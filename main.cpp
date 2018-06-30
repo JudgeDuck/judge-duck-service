@@ -220,16 +220,18 @@ QString judgeFile(string language)
 	qout << "compile success!\n";
 	qout.flush();
 	
+	sz = fileSize("judging");
+	if(sz <= 0) return "binary too small";
+	if(sz >= 262144) return "binary too large";
+	
 	qDebug() << sock.bind(8008);
 	sock.connectToHost("172.29.8.241", 8000);
 	qDebug() << sock.waitForConnected();
 	ts.setDevice(&sock);
 	ds.setDevice(&sock);
-	sendFile("input.txt", "input.txt");
 	
-	sz = fileSize("judging");
-	if(sz <= 0) return "binary too small";
-	if(sz >= 262144) return "binary too large";
+	sendFile("input.txt", "input.txt");
+	sendFile("answer.txt", "answer.txt");
 	
 	sendFile("judging", "judging");
 	runCmd("arbiter judging " + to_string(time_ns) + " " + to_string(mem_kb) + " > arbiter.out");
