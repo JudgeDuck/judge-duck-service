@@ -177,13 +177,13 @@ QString judgeFile(string language)
 	//if(sz >= 10000) return "source too large";
 	size_t sz = 0;
 	
-	string GCC = "ulimit -v 524288 && gcc -DJD_OLD_MEMORY_LIMIT -pipe  -O2  -MD -fno-omit-frame-pointer -static -Wall -Wno-format -Wno-unused -gstabs -m32 -fno-tree-ch -fno-stack-protector -gstabs -c -o ";
+	string GCC = "ulimit -v 524288 && gcc  -pipe  -O2  -MD -fno-omit-frame-pointer -static -Wall -Wno-format -Wno-unused -gstabs -m32 -fno-tree-ch -fno-stack-protector -gstabs -c -o ";
 	
-	string GXX = "ulimit -v 524288 && g++ -DJD_OLD_MEMORY_LIMIT -pipe  -O2  -MD -fno-omit-frame-pointer -static -Wall -Wno-format -Wno-unused -gstabs -m32 -fno-tree-ch -fno-stack-protector -fno-exceptions -fno-unwind-tables -fno-rtti -fno-threadsafe-statics -gstabs -c -o ";
+	string GXX = "ulimit -v 524288 && g++  -pipe  -O2  -MD -fno-omit-frame-pointer -static -Wall -Wno-format -Wno-unused -gstabs -m32 -fno-tree-ch -fno-stack-protector -fno-exceptions -fno-unwind-tables -fno-rtti -fno-threadsafe-statics -gstabs -c -o ";
 	
-	string GXX11 = "ulimit -v 524288 && g++ -DJD_OLD_MEMORY_LIMIT -pipe  -O2 -std=c++11 -MD -fno-omit-frame-pointer -static -Wall -Wno-format -Wno-unused -gstabs -m32 -fno-tree-ch -fno-stack-protector -fno-exceptions -fno-unwind-tables -fno-rtti -fno-threadsafe-statics -gstabs -c -o ";
+	string GXX11 = "ulimit -v 524288 && g++  -pipe  -O2 -std=c++11 -MD -fno-omit-frame-pointer -static -Wall -Wno-format -Wno-unused -gstabs -m32 -fno-tree-ch -fno-stack-protector -fno-exceptions -fno-unwind-tables -fno-rtti -fno-threadsafe-statics -gstabs -c -o ";
 	
-	string GXX_TASKLIB = "ulimit -v 524288 && g++ -DJD_OLD_MEMORY_LIMIT -pipe  -O2  -MD -fno-omit-frame-pointer -static -Wall -Wno-format -Wno-unused -gstabs -m32 -fno-tree-ch -fno-stack-protector -fno-exceptions -fno-unwind-tables -fno-rtti -fno-threadsafe-statics  -I../libtaskduck_include -DJOS_USER -gstabs -c -o ";
+	string GXX_TASKLIB = "ulimit -v 524288 && g++  -pipe  -O2  -MD -fno-omit-frame-pointer -static -Wall -Wno-format -Wno-unused -gstabs -m32 -fno-tree-ch -fno-stack-protector -fno-exceptions -fno-unwind-tables -fno-rtti -fno-threadsafe-statics  -I../libtaskduck_include -DJOS_USER -gstabs -c -o ";
 	
 	string G = GCC;
 	string contestant_filename = "contestant.c";
