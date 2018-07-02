@@ -502,6 +502,8 @@ def init_problems():
 	problems = {}
 	li = utils.list_dir(path_problems)
 	for pid in li:
+		if pid[:1] == ".":
+			continue
 		add_problem(pid)
 
 def add_problem(pid):
