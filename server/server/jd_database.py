@@ -173,7 +173,7 @@ def do_register(username, email, password):
 		"signature": rand_signature(),
 	}
 	write_user_profile(user)
-	users[username] = user
+	add_user(username)
 	lock.release()
 	return {"status": "success"}
 
