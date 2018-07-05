@@ -73,6 +73,8 @@ def judge_server_thread_func():
 	while True:
 		time.sleep(1)
 		judge_lock.acquire()
+		pending_filename = ""
+		pending_rejudge_filename = ""
 		files = utils.list_dir(db.path_pending)
 		min_id = -1
 		for filename in files:
@@ -80,6 +82,18 @@ def judge_server_thread_func():
 				id = utils.parse_int(filename[:-4], -1)
 				if id != -1 and (min_id == -1 or id < min_id):
 					min_id = id
+					pending_filename = db.path_pending + "/" + filename
+		files = utils.list_dir(db.path_pending_rejudge)
+		min_id_rej = -1
+		for filename in files:
+			if filename[-4:] == ".txt":
+				id = utils.parse_int(filename[:-4], -1)
+				if id != -1 and (min_id_rej == -1 or id < min_id_rej):
+					min_id_rej = id
+					pending_rejudge_filename = db.path_pending_rejudge + "/" + filename
+		if min_id == -1:
+			min_id = min_id_rej
+			pending_filename = pending_rejudge_filename
 		if min_id == -1:
 			judge_lock.release()
 			continue
@@ -90,7 +104,7 @@ def judge_server_thread_func():
 			print("[jd] judge failed !!!!!!!")
 		print("[jd] judge done, id = %d" % min_id)
 		try:
-			os.remove(db.path_pending + "%d.txt" % min_id)
+			os.remove(pending_filename)
 		except:
 			pass
 		judge_lock.release()
