@@ -47,6 +47,10 @@ SECTIONS
 	. = 0x10000000;
 
 	.data : {
+		PROVIDE(fsipcbuf = .);
+		. = 0x1000;
+		PROVIDE(thisenv = .);
+		. = 0x1004;
 		*(.data)
 	}
 

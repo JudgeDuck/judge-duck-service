@@ -4,7 +4,7 @@
 
 #define debug 0
 
-union Fsipc fsipcbuf __attribute__((aligned(PGSIZE)));
+extern union Fsipc fsipcbuf __attribute__((aligned(PGSIZE)));
 
 // Send an inter-environment request to the file server, and wait for
 // a reply.  The request body should be in fsipcbuf, and parts of the

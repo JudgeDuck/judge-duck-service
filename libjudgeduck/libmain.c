@@ -3,7 +3,7 @@
 
 #include <inc/lib.h>
 
-const volatile struct Env *thisenv;
+extern const volatile struct Env *thisenv;
 const char *binaryname = "<unknown>";
 
 void
