@@ -40,6 +40,7 @@ LIB_SRCFILES :=	\
 			perror.cpp \
 			fileops.cpp \
 			new.cpp \
+			chks.cpp \
 			# [TODO] strtol
 			# [TODO] strtod
 			# [TODO fake] atoi
