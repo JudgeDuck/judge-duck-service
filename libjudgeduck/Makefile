@@ -21,15 +21,14 @@ LIB_SRCFILES :=		console.c \
 			panic.c \
 			printf.c \
 			printfmt.c \
-			readline.c \
 			string.c \
 			syscall.c \
 			ipc.c
 
 LIB_SRCFILES :=		$(LIB_SRCFILES) \
-			pgfault.c \
 			pfentry.S \
 			entry.S \
+			backup.c \
 
 LIB_SRCFILES :=		$(LIB_SRCFILES) \
 			args.c \

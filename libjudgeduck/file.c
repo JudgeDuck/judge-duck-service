@@ -15,9 +15,10 @@ union Fsipc fsipcbuf __attribute__((aligned(PGSIZE)));
 static int
 fsipc(unsigned type, void *dstva)
 {
-	static envid_t fsenv;
-	if (fsenv == 0)
-		fsenv = ipc_find_env(ENV_TYPE_FS);
+	//static envid_t fsenv;
+	//if (fsenv == 0)
+	//	fsenv = ipc_find_env(ENV_TYPE_FS);
+	envid_t fsenv = ipc_find_env(ENV_TYPE_FS);
 
 	static_assert(sizeof(fsipcbuf) == PGSIZE);
 
@@ -34,7 +35,7 @@ static ssize_t devfile_write(struct Fd *fd, const void *buf, size_t n);
 static int devfile_stat(struct Fd *fd, struct Stat *stat);
 static int devfile_trunc(struct Fd *fd, off_t newsize);
 
-struct Dev devfile =
+const struct Dev devfile =
 {
 	.dev_id =	'f',
 	.dev_name =	"file",

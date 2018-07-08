@@ -23,13 +23,17 @@
 #include <inc/fs.h>
 #include <inc/fd.h>
 #include <inc/args.h>
-#include <inc/malloc.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #define USED(x)		(void)(x)
+
+// backup and restore
+#define JD_BACKUP_SIZE (2 * PGSIZE)
+void jd_backup(void *buf);
+void jd_restore(const void *buf);
 
 // main user program
 void	umain(int argc, char **argv);

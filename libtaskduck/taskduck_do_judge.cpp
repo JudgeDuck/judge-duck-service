@@ -100,8 +100,13 @@ static void do_judge(TaskDuck *td, void *eip) {
 	
 	init_judgeduck(td);
 	
+	char *backup_buf = (char *) td->malloc(JD_BACKUP_SIZE);
+	jd_backup(backup_buf);
+	
 	real_eip = eip;
 	sys_enter_judge((void *) judge_wrapper, &prm);
+	
+	jd_restore(backup_buf);
 	
 	finish_judgeduck(td);
 	

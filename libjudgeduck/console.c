@@ -39,7 +39,7 @@ static ssize_t devcons_write(struct Fd*, const void*, size_t);
 static int devcons_close(struct Fd*);
 static int devcons_stat(struct Fd*, struct Stat*);
 
-struct Dev devcons =
+const struct Dev devcons =
 {
 	.dev_id =	'c',
 	.dev_name =	"cons",
