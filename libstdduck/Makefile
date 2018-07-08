@@ -35,17 +35,10 @@ LIB_SRCFILES :=	\
 			stdin.cpp \
 			remove.cpp \
 			rename.cpp \
-			fclose.cpp \
-			fflush.cpp \
 			tmpfile.cpp \
-			fopen.cpp \
 			setbuf.cpp \
-			fgetc.cpp \
-			fputc.cpp \
-			fread.cpp \
-			fseek.cpp \
-			feof.cpp \
 			perror.cpp \
+			fileops.cpp \
 			# [TODO] strtol
 			# [TODO] strtod
 			# [TODO fake] atoi
@@ -63,12 +56,7 @@ LIB_SRCFILES :=	\
 			# [fake] setbuf, setbuffer, setlinebuf, setvbuf
 			# [TODO] fprintf
 			# [TODO] fscanf
-			# [TODO imp] getchar (!)
 			# [TODO imp] ungetc
-			# [TODO imp] putchar, puts
-			# [TODO imp] fread, fwrite
-			# [TODO imp] fseek
-			# [TODO imp] feof
 			# [fake] perror
 			# [N] qsort_r
 			# [N] abort, atexit

@@ -1,8 +1,8 @@
-#include <stdio.h>
-
 // Fake implementation
 // Make them happy :)
 
-FILE *stdin = (FILE *) 1;
-FILE *stdout = (FILE *) 2;
-FILE *stderr = (FILE *) 3;
+struct FILE;
+
+const FILE *stdin = (FILE *) 1;
+const FILE *stdout = (FILE *) 2;
+const FILE *stderr = (FILE *) 3;
