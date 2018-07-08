@@ -203,7 +203,7 @@ QString judgeFile(string language)
 	qout << "compiling...\n";
 	qout.flush();
 	
-	if(system((G + "contestant.o " + contestant_filename + " > gcc_contestant.log 2>&1").c_str()))
+	if(system((G + "contestant.o " + contestant_filename + " -fno-use-cxa-atexit > gcc_contestant.log 2>&1").c_str()))
 		return "contestant compile error\n" + localFileContent("gcc_contestant.log").left(40);
 	if(system((GXX_TASKLIB + "tasklib.o tasklib.cpp " + tasklib_option + " > gcc_tasklib.log 2>&1").c_str()))
 		return "tasklib compile error\n" + localFileContent("gcc_tasklib.log").left(40);

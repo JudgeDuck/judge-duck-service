@@ -39,6 +39,7 @@ LIB_SRCFILES :=	\
 			setbuf.cpp \
 			perror.cpp \
 			fileops.cpp \
+			new.cpp \
 			# [TODO] strtol
 			# [TODO] strtod
 			# [TODO fake] atoi
