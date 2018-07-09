@@ -8,9 +8,11 @@ endif
 
 
 USER_CFLAGS := -pipe -fno-builtin -O2 -std=gnu99 -MD -fno-omit-frame-pointer -static -Wall -Wno-format -Wno-unused -gstabs -m32 -fno-tree-ch -fno-stack-protector -I../libjudgeduck_include -DJOS_USER -gstabs 
+USER_CFLAGS := $(USER_CFLAGS) -fno-exceptions -fno-unwind-tables
 # USER_CFLAGS := $(USER_CFLAGS) -DJD_OLD_MEMORY_LIMIT
 
 USER_CXXFLAGS := -pipe -fno-builtin -O2 -MD -fno-omit-frame-pointer -static -Wall -Wno-format -Wno-unused -gstabs -m32 -fno-tree-ch -fno-stack-protector -I../libjudgeduck_include -DJOS_USER -gstabs 
+USER_CXXFLAGS := $(USER_CXXFLAGS) -fno-exceptions -fno-unwind-tables -fno-rtti -fno-threadsafe-statics 
 # USER_CXXFLAGS := $(USER_CXXFLAGS) -DJD_OLD_MEMORY_LIMIT
 
 OBJDIR := .
@@ -68,7 +70,7 @@ LIB_SRCFILES :=	\
 
 
 LIB_OBJFILES := $(patsubst %.c, $(OBJDIR)/%.o, $(LIB_SRCFILES))
-LIB_OBJFILES := $(patsubst %.cpp, $(OBJDIR)/%.o, $(LIB_SRCFILES))
+LIB_OBJFILES := $(patsubst %.cpp, $(OBJDIR)/%.o, $(LIB_OBJFILES))
 LIB_OBJFILES := $(patsubst %.S, $(OBJDIR)/%.o, $(LIB_OBJFILES))
 
 all: $(OBJDIR)/libstdduck.a
