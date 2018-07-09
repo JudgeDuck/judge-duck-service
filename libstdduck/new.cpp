@@ -4,27 +4,39 @@
 static std::new_handler the_new_handler = 0;
 
 void * operator new (std::size_t size) {
-	void *ret = malloc(size);
-	if (!ret) {
-		the_new_handler();
+	// Should not return null pointer
+	if (size == 0) {
+		size = 1;
 	}
-	return ret;
+	while (true) {
+		void *ret = malloc(size);
+		if (ret) {
+			return ret;
+		}
+		if (the_new_handler) {
+			the_new_handler();
+		} else {
+			// Should throw std::bad_alloc(), but we have no exception... 
+			return NULL;
+		}
+	}
 }
 
 void * operator new[] (std::size_t size) {
-	void *ret = malloc(size);
-	if (!ret) {
-		the_new_handler();
+	// Try it best not to return null pointer
+	if (size == 0) {
+		size = 1;
 	}
+	void *ret = malloc(size);
 	return ret;
 }
 
 void operator delete (void *p) {
-	return free(p);
+	free(p);
 }
 
 void operator delete[] (void *p) {
-	return free(p);
+	free(p);
 }
 
 namespace std {
