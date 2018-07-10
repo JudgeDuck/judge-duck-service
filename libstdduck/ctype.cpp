@@ -23,7 +23,7 @@ int isdigit(int c) {
 }
 
 int isgraph(int c) {
-	return c > 32 && c < 128;
+	return c > 32 && c < 127;
 }
 
 int islower(int c) {
