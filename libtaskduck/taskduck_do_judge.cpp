@@ -31,7 +31,16 @@ static void read_file(TaskDuck *td, const char *filename, char *&content, int &s
 		jd_fstat(fd, &stat);
 		// jd_cprintf("[libtaskduck] [%s] size = %d\n", filename, stat.st_size);
 		content = (char *) td->malloc(stat.st_size);
-		size = jd_read(fd, content, stat.st_size);
+		int remain = stat.st_size;
+		size = 0;
+		while (remain) {
+			int tmp = jd_read(fd, content + size, remain);
+			if (tmp <= 0) {
+				break;
+			}
+			size += tmp;
+			remain -= tmp;
+		}
 	}
 }
 
