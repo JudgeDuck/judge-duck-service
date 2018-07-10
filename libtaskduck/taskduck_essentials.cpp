@@ -17,6 +17,7 @@ TaskDuck::TaskDuck() {
 	this->cmp = TaskDuck::multiline_cmp;
 	this->memory_allocated = false;
 	this->message = NULL;
+	this->judge_pages = (char *) this->malloc(JUDGE_PAGES_SIZE, false);
 }
 
 void TaskDuck::set_time_limit(long long time_ns) {

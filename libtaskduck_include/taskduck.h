@@ -25,7 +25,7 @@ struct TaskDuck {
 	void judge();
 	void judge_using_wrapper(void (*wrapper)());
 	
-	void * malloc(size_t size);
+	void * malloc(size_t size, bool alloc = true);
 	
 	static bool multiline_cmp(const char *, int, const char *, int, const char *, int);
 	
@@ -49,6 +49,8 @@ struct TaskDuck {
 	
 	bool cmp_result;
 	const char *message;
+	
+	char *judge_pages;
 };
 
 #endif

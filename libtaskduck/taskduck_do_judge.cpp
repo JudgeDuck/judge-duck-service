@@ -47,7 +47,17 @@ static void read_file(TaskDuck *td, const char *filename, char *&content, int &s
 static void init_judgeduck(TaskDuck *td) {
 	extern int ebss;
 	
-	read_file(td, td->input_filename, td->stdin_content, td->stdin_size);
+	// Map the first metadata page
+	sys_map_judge_pages(td->judge_pages, 0, PGSIZE);
+	
+	// Read the input info
+	unsigned input_pos = ((unsigned *) td->judge_pages)[0];
+	unsigned input_len = ((unsigned *) td->judge_pages)[1];
+	sys_map_judge_pages(td->judge_pages + input_pos, input_pos, ROUNDUP(input_len, PGSIZE));
+	td->stdin_content = td->judge_pages + input_pos;
+	td->stdin_size = input_len;
+	
+	// read_file(td, td->input_filename, td->stdin_content, td->stdin_size);
 	judgeduck::stdin_content = td->stdin_content;
 	judgeduck::stdin_size = td->stdin_size;
 	
@@ -77,7 +87,17 @@ static void finish_judgeduck(TaskDuck *td) {
 	}
 	td->stdout_size = size;
 	
-	read_file(td, td->answer_filename, td->answer_content, td->answer_size);
+	// Map the second metadata page
+	sys_map_judge_pages(td->judge_pages + PGSIZE, PGSIZE, PGSIZE);
+	
+	// Read the input info
+	unsigned answer_pos = ((unsigned *) td->judge_pages)[PGSIZE / 4];
+	unsigned answer_len = ((unsigned *) td->judge_pages)[PGSIZE / 4 + 1];
+	sys_map_judge_pages(td->judge_pages + answer_pos, answer_pos, ROUNDUP(answer_len, PGSIZE));
+	td->answer_content = td->judge_pages + answer_pos;
+	td->answer_size = answer_len;
+	
+	// read_file(td, td->answer_filename, td->answer_content, td->answer_size);
 }
 
 static void *real_eip;
