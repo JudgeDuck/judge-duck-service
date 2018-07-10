@@ -46,6 +46,7 @@ LIB_SRCFILES :=	\
 			strtol.cpp \
 			ctype.cpp \
 			printf.c \
+			assert.c \
 			# [fake] atoi
 			# [TODO] [imp] malloc
 			# [TODO] [imp] getenv
