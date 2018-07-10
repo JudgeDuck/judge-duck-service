@@ -689,7 +689,7 @@ static long double my_strtold(int (*get)(), int (*peek)()) {
 
 static void my_get_string(int (*get)(), int (*peek)(), char *s) {
 	while (isspace(peek())) get();
-	while (!isspace(peek())) *(s++) = get();
+	while (!isspace(peek()) && peek() != EOF) *(s++) = get();
 	*s = 0;
 }
 
