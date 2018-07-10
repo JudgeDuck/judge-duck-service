@@ -237,7 +237,7 @@ memfind(const void *s, int c, size_t n)
 }
 
 long
-strtol(const char *s, char **endptr, int base)
+jd_strtol(const char *s, char **endptr, int base)
 {
 	int neg = 0;
 	long val = 0;

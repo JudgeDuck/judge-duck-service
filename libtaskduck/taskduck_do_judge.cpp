@@ -110,6 +110,9 @@ static void do_judge(TaskDuck *td, void *eip) {
 	
 	finish_judgeduck(td);
 	
+	td->stdout_content[td->stdout_size] = 0;
+	jd_cprintf("your out = [%s]\n", td->stdout_content);
+	
 	if (td->cmp) {
 		td->cmp_result = td->cmp(
 			td->stdin_content, td->stdin_size,

@@ -271,6 +271,10 @@ int getchar() {
 	return stdin_pos == stdin_end ? EOF : *(stdin_pos++);
 }
 
+extern "C" int _stdduck_peek() {
+	return stdin_pos == stdin_end ? EOF : *stdin_pos;
+}
+
 // TODO: Support ungetc
 int ungetc(int c, FILE *f) {
 	return EOF;

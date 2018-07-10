@@ -206,6 +206,7 @@ QString judgeFile(string language)
 	if (language != "C") {
 		contestant_filename = contestant_filename + " -fno-use-cxa-atexit";
 	}
+	contestant_filename = contestant_filename + " -U_FORTIFY_SOURCE";
 	if(system((G + "contestant.o " + contestant_filename + " > gcc_contestant.log 2>&1").c_str()))
 		return "contestant compile error\n" + localFileContent("gcc_contestant.log").left(40);
 	if(system((GXX_TASKLIB + "tasklib.o tasklib.cpp " + tasklib_option + " > gcc_tasklib.log 2>&1").c_str()))

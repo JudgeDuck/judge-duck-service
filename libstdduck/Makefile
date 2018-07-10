@@ -42,10 +42,11 @@ LIB_SRCFILES :=	\
 			perror.cpp \
 			fileops.cpp \
 			new.cpp \
-			chks.cpp \
-			# [TODO] strtol
-			# [TODO] strtod
-			# [TODO fake] atoi
+			scanf.c \
+			strtol.cpp \
+			ctype.cpp \
+			printf.c \
+			# [fake] atoi
 			# [TODO] [imp] malloc
 			# [TODO] [imp] getenv
 			# [fake] system
@@ -58,8 +59,7 @@ LIB_SRCFILES :=	\
 			# [fake] tmpfile
 			# [fake] fopen, freopen
 			# [fake] setbuf, setbuffer, setlinebuf, setvbuf
-			# [TODO] fprintf
-			# [TODO] fscanf
+			# [TODO more] scanf
 			# [TODO imp] ungetc
 			# [fake] perror
 			# [N] qsort_r
