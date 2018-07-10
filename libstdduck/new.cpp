@@ -40,8 +40,13 @@ void operator delete[] (void *p) {
 }
 
 namespace std {
-	// Make it a page fault :)
-	extern "C" void __throw_bad_alloc() {
+	// Make them page faults :)
+	
+	void __throw_bad_alloc() {
+		*(int *) 0 = 0;
+	}
+	
+	void __throw_length_error(char const*) {
 		*(int *) 0 = 0;
 	}
 	
