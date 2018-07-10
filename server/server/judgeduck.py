@@ -514,6 +514,8 @@ def entry(req):
 		return static_view_serve(req, path = path[8:], document_root = "./jd_static/images")
 	
 	if path == "/rerererereload":
+		if req.session.get("username", "") != "wys":
+			raise Http404()
 		jd_judge.judge_lock.acquire()
 		db.init()
 		jd_judge.judge_lock.release()
