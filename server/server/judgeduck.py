@@ -45,6 +45,8 @@ from . import jd_utils as utils
 
 from . import jd_judge
 
+jd_judge.start()
+
 def render_view(req, title, content):
 	res = HttpResponse(content_type="text/html")
 	if title != "":
@@ -338,6 +340,7 @@ def render_submissions(subs):
 		tmp += "<td> <a href='/submission/%s'> %s </a> </td>" % (sid, sid)
 		tmp += "<td style='font-size:13px'> <a href='/user/profile/%s'> %s </a> </td>" % (username, username)
 		tmp += "<td style='font-size:13px'> <a href='/problem/%s'> %s </a> </td>" % (pid, pid)
+		tmp += "<td> %s </td>" % sub["status_short"]
 		tmp += "<td> %s </td>" % score
 		tmp += "<td style='font-size:13px'> %s </td>" % time_text
 		tmp += "<td style='font-size:13px'> %s </td>" % memory_text

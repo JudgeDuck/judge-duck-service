@@ -12,6 +12,7 @@ path_pending = path_prefix + "pending/"
 path_pending_rejudge = path_prefix + "pending_rejudge/"
 path_users = path_prefix + "users/"
 path_blogs = path_prefix + "blogs/"
+path_problem_zips = path_prefix + "problem_zips/"
 
 option_languages = [
 	"C",
@@ -23,6 +24,7 @@ option_languages = [
 import re
 from random import *
 import hashlib
+import json
 
 from threading import *
 lock = Lock()
@@ -501,10 +503,24 @@ def init_problems():
 	global problems
 	problems = {}
 	li = utils.list_dir(path_problems)
+	utils.mkdir(path_problem_zips)
+	utils.system("rm", ["-rf", path_problem_zips + "*"])
 	for pid in li:
 		if pid[:1] == ".":
 			continue
-		add_problem(pid)
+		if not add_problem(pid):
+			continue
+		temp_zipname = "temp.zip"
+		cmdstr = "cd %s%s/ && zip -r ../../../%s%s *" % (path_problems, pid, path_temp, temp_zipname)
+		utils.system(
+			"bash",
+			["-c", cmdstr],
+			30,
+		)
+		md5 = utils.md5sum_b(utils.read_file_b(path_temp + temp_zipname))
+		problems[pid]["md5"] = md5
+		utils.rename(path_temp + temp_zipname, path_problem_zips + md5)
+		print("md5 of problem %s is %s" % (pid, md5))
 
 def add_problem(pid):
 	prob = {
@@ -530,7 +546,7 @@ def add_problem(pid):
 	for s in conf_content:
 		if s == "hidden":
 			# Hide this problem
-			return
+			return False
 		match_k = None
 		for k in keys:
 			if s[:len(k)] == k:
@@ -550,6 +566,7 @@ def add_problem(pid):
 	prob["time_limit_text"] = utils.render_time_ns(int(prob["time_limit"]))
 	prob["memory_limit_text"] = utils.render_memory_kb(int(prob["memory_limit"]))
 	problems[pid] = prob
+	return True
 
 
 
@@ -564,22 +581,28 @@ def init_submissions():
 	for i in range(n_subs):
 		update_submission(i)
 
+def update_sub_using_json(sub, res, save = False):
+	time_ns = utils.parse_int("%s" % res["max_time_ns"], 0)
+	mem_kb = utils.parse_int("%s" % res["max_mem_kb"], 0)
+	score = utils.parse_float(res["score"], 0)
+	status = res["status"]
+	status_short = res["status_short"]
+	if status_short == "":
+		status_short = "Done"
+	sub["time"] = time_ns
+	sub["time_text"] = utils.render_time_ns(time_ns)
+	sub["memory"] = mem_kb
+	sub["memory_text"] = utils.render_memory_kb(mem_kb)
+	sub["score"] = score
+	sub["score_text"] = "%.0lf" % score
+	sub["status"] = status
+	sub["status_short"] = status_short
+	if save:
+		utils.write_file(path_result + "%s.txt" % sub["sid"], json.dumps(res,indent=4,sort_keys=True))
+
 def update_submission(sid, new_judge_time = None):
 	global submissions
 	global problems
-	name = path_result + "%d.txt" % sid
-	res_str = utils.read_file(name)
-	res_arr = res_str.split("\n")
-	ok1 = False
-	ok2 = False
-	time_ms = None
-	time_ms_prefix = "time_ms = "
-	time_ms_prefix_len = len(time_ms_prefix)
-	memory_kb = None
-	memory_kb_prefix = "mem_kb = "
-	memory_kb_prefix_len = len(memory_kb_prefix)
-	#code_content = read_file("code/%d.txt" % id)
-	#code_first_row = code_content.split("\n")[0]
 	
 	metadata_filename = path_metadata + "%d.txt" % sid
 	metadata_content = utils.read_file(metadata_filename).split("\n")
@@ -635,13 +658,10 @@ def update_submission(sid, new_judge_time = None):
 			language = match_content
 	
 	
-	#if code_first_row[:len(name_magic)] == name_magic:
-	#	player_name = code_first_row[len(name_magic):]
-	
 	sub = {
 		"sid": sid,
 		"pid": pid,
-		"status": "Pending",
+		"status": "Judge Failed",
 		"time": None,
 		"time_text": "N/A",
 		"memory": None,
@@ -654,44 +674,18 @@ def update_submission(sid, new_judge_time = None):
 		"submit_time": submit_time,
 		"judge_time": judge_time,
 		"language": language,
+		"status_short": "",
 	}
 	
 	sub["code_length_text"] = utils.render_code_length(sub["code_length"])
 	
-	if res_str != "":
-		sub["status"] = "Judge Failed"
+	res = utils.read_file(path_result + "%s.txt" % sid)
+	try:
+		res = json.loads(res)
+		update_sub_using_json(sub, res)
+	except:
+		pass
 	
-	for s in res_arr:
-		if (s == "Correct Answer") or (s == "Correct Answer!"):
-			ok1 = True
-		if s[:len("verdict = ")] == "verdict = ":
-			sub["status"] = s[len("verdict = "):]
-		if s == "verdict = Run Finished":
-			ok2 = True
-		if s[:time_ms_prefix_len] == time_ms_prefix:
-			time_ms = utils.parse_float(s[time_ms_prefix_len:])
-			sub["time"] = time_ms
-			sub["time_text"] = utils.render_time_ms(time_ms)
-		if s[:memory_kb_prefix_len] == memory_kb_prefix:
-			memory_kb = utils.parse_int(s[memory_kb_prefix_len:])
-			sub["memory"] = memory_kb
-			sub["memory_text"] = utils.render_memory_kb(memory_kb)
-		if s.find("compile error") != -1:
-			sub["status"] = "Compile Error"
-		if s.find("link error") != -1:
-			sub["status"] = "Compile Error"
-	if ok1 and ok2 and time_ms != None:
-		if time_ms > 0 and time_ms < 100 * 1000:
-			sub["status"] = "Accepted"
-	if ok2 and (not ok1):
-		sub["status"] = "Wrong Answer"
-	if ok2 == True:
-		prob = problems.get(pid, None)
-		if (prob != None) and (memory_kb != None) and (memory_kb > prob["memory_limit"]):
-			sub["status"] = "Memory Limit Exceeded"
-	if sub["status"] != "Pending":
-		sub["score"] = 100 if sub["status"] == "Accepted" else 0
-		sub["score_text"] = "%s" % sub["score"]
 	submissions[sid] = sub
 
 #

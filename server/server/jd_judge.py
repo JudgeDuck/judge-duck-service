@@ -5,111 +5,175 @@ import os
 import subprocess
 import threading
 import re
+import uuid
+import urllib.request, urllib.parse
+import json
+import base64
 
 from . import jd_htmldocs as htmldocs
 from . import jd_database as db
 from . import jd_utils as utils
 
+N_MAX_RUNNINGS = 20
+PIGEON_URL = utils.read_file("pigeon-url.txt").split("\n")[0]
 
-judge_lock = threading.Lock()
+pendings = {}
+runnings = {}
+runnings_lock = threading.Lock()
 
-def do_judge(sid):
+
+def do_post(url, data_dict):
+	try:
+		data = urllib.parse.urlencode(data_dict).encode()
+		req = urllib.request.Request(url, data=data)
+		res = urllib.request.urlopen(req)
+		return res.read().decode('utf-8')
+	except:
+		return ""
+
+
+
+def do_send_problem_file(md5):
+	res = do_post(PIGEON_URL + "api/query_file", {"md5": md5})
+	try:
+		res = json.loads(res)
+	except:
+		# The pigeon might has gone
+		return
+	if res["status"] == "success":
+		return
+	content = base64.b64encode(utils.read_file_b(db.path_problem_zips + md5))
+	do_post(PIGEON_URL + "api/send_file", {"md5": md5, "content": content})
+
+def do_send_contestant_files(code_file, language):
+	utils.write_file(db.path_temp + "language.txt", language)
+	contestant_filename = "contestant.cpp"
+	if language == "C":
+		contestant_filename = "contestant.c"
+	utils.system("cp", [code_file, db.path_temp + contestant_filename])
+	zip_filename = db.path_temp + "to_submit.zip"
+	utils.system("rm", ["-rf", zip_filename])
+	utils.system("zip", ["-j", zip_filename, db.path_temp + "language.txt", db.path_temp + contestant_filename])
+	content_b = utils.read_file_b(zip_filename)
+	md5 = utils.md5sum_b(content_b)
+	content = base64.b64encode(content_b)
+	do_post(PIGEON_URL + "api/send_file", {"md5": md5, "content": content})
+	return md5
+
+def do_submit_to_pigeon(sid):
+	print("Submitting sid = %s" % sid)
+	global pendings
+	global runnings
+	global runnings_lock
+	try:
+		priority = pendings[sid]
+		del pendings[sid]
+	except:
+		priority = runnings[sid]["priority"]
+	task_id = uuid.uuid1().hex
 	sub = db.do_get_submission(sid)
-	if sub == None:
-		print("咕咕咕咕咕咕，好像没有 %s 这条提交记录啊" % sid)
-		return
-	pid = sub["pid"]
-	pinfo = db.do_get_problem_info(pid)
-	if pinfo == None:
-		print("咕咕咕咕咕，在测提交记录 %s 的函数，发现好像没有 %s 这道题啊" % (sid, pid))
-		return
-	code = utils.read_file(db.path_code + "%s.txt" % sid)
-	language = sub["language"]
-	code_file_name = "contestant.c"
-	if language != "C":
-		code_file_name = "contestant.cpp"
-	ok = True
-	if re.match('.*\#\s*include\s*"/dev/.*', " ".join(" ".join(code.split("\n")).split("\r"))):
-		ok = False
-		result = "咕咕咕，非常抱歉！您的代码有可能危害鸭子的生命安全，不予评测"
-	if ok:
-		fcode = open(code_file_name, "w")
-		fcode.write(code)
-		fcode.close()
-		finput = open("input.txt", "w")
-		input_content = utils.read_file(db.path_problems + "%s/input.txt" % pid)
-		finput.write(input_content)
-		finput.close()
-		fanswer = open("answer.txt", "w")
-		answer_content = utils.read_file(db.path_problems + "%s/answer.txt" % pid)
-		fanswer.write(answer_content)
-		fanswer.close()
-		flib = open("tasklib.cpp", "w")
-		flib.write(utils.read_file(db.path_problems + "%s/tasklib.cpp" % pid))
-		flib.close()
-		for filename in pinfo["files"]:
-			f = open(filename, "w")
-			f.write(utils.read_file(db.path_problems + ("%s/" % pid) + filename))
-			f.close()
-		TL = "%s" % pinfo["time_limit"]
-		ML = "%s" % pinfo["memory_limit"]
-		print("run tl = %s ml = %s lang = %s" % (TL, ML, language))
-		try:
-			cp = subprocess.run(["../judgesrv", TL, ML, language], stdout=subprocess.PIPE, timeout=20)
-			result = str(cp.stdout, "utf-8")
-			if result == "":
-				result = "咕咕咕，评测机好像炸了"
-		except:
-			result = "咕咕咕，评测失败"
-	print("result = %s" % result)
-	fres = open(db.path_temp + "judge_res.txt", "w")
-	fres.write(result)
-	fres.close()
-	os.rename(db.path_temp + "judge_res.txt", db.path_result + "%d.txt" % sid)
-	db.update_submission(sid, utils.get_current_time())
+	prob = db.do_get_problem_info(sub["pid"])
+	task = {
+		"task_id": task_id,
+		"priority": priority,
+		"sid": sid,
+		"problem_md5": prob["md5"],
+		"sub": sub,
+		"language": sub["language"],
+	}
+	do_send_problem_file(prob["md5"])
+	task["contestant_md5"] = do_send_contestant_files(db.path_code + "%s.txt" % sid, sub["language"])
+	res = do_post(PIGEON_URL + "api/submit_task", {
+		"taskid": task["task_id"],
+		"problem_md5": task["problem_md5"],
+		"contestant_md5": task["contestant_md5"],
+	})
+	runnings_lock.acquire()
+	runnings[sid] = task
+	runnings_lock.release()
 
-def judge_server_thread_func():
-	print("jd judge server started")
+def judge_server_running_thread_func():
+	global runnings
+	global runnings_lock
 	while True:
 		time.sleep(1)
-		judge_lock.acquire()
-		pending_filename = ""
-		pending_rejudge_filename = ""
-		files = utils.list_dir(db.path_pending)
-		min_id = -1
-		for filename in files:
-			if filename[-4:] == ".txt":
-				id = utils.parse_int(filename[:-4], -1)
-				if id != -1 and (min_id == -1 or id < min_id):
-					min_id = id
-					pending_filename = db.path_pending + "/" + filename
-		files = utils.list_dir(db.path_pending_rejudge)
-		min_id_rej = -1
-		for filename in files:
-			if filename[-4:] == ".txt":
-				id = utils.parse_int(filename[:-4], -1)
-				if id != -1 and (min_id_rej == -1 or id < min_id_rej):
-					min_id_rej = id
-					pending_rejudge_filename = db.path_pending_rejudge + "/" + filename
-		if min_id == -1:
-			min_id = min_id_rej
-			pending_filename = pending_rejudge_filename
-		if min_id == -1:
-			judge_lock.release()
+		runnings_lock.acquire()
+		taskids = []
+		tasks = []
+		for sid in runnings:
+			task = runnings[sid]
+			taskids.append(task["task_id"])
+			tasks.append(task)
+		runnings_lock.release()
+		if len(taskids) == 0:
 			continue
-		print("[jd] judging id = %d" % min_id)
+		taskids_s = "|".join(taskids)
+		res = do_post(PIGEON_URL + "api/get_task_results", {"taskids": taskids_s})
 		try:
-			do_judge(min_id)
+			res = json.loads(res)
 		except:
-			print("[jd] judge failed !!!!!!!")
-		print("[jd] judge done, id = %d" % min_id)
-		try:
-			os.remove(pending_filename)
-		except:
-			pass
-		judge_lock.release()
+			# gone
+			continue
+		if len(res) != len(taskids):
+			continue
+		print(json.dumps(res, indent=4, sort_keys=True))
+		for i in range(len(res)):
+			result = res[i]
+			if result["status"] != "success":
+				do_submit_to_pigeon(tasks[i]["sid"])
+				continue
+			result = result["result"]
+			sub = tasks[i]["sub"]
+			has_completed = result["has_completed"] == "true"
+			db.update_sub_using_json(sub, result, has_completed)
+			if has_completed:
+				db.update_submission(sub["sid"], utils.get_current_time())
+				utils.system("rm", ["-rf", db.path_pending + "%s.txt" % sub["sid"]])
+				utils.system("rm", ["-rf", db.path_pending_rejudge + "%s.txt" % sub["sid"]])
+				runnings_lock.acquire()
+				del runnings[sub["sid"]]
+				runnings_lock.release()
+
+def judge_server_thread_func():
+	global pendings
+	global runnings
+	global runnings_lock
+	while True:
+		time.sleep(0.2)
+		runnings_lock.acquire()
+		if len(runnings) >= N_MAX_RUNNINGS:
+			runnings_lock.release()
+			continue
+		runnings_lock.release()
+		files = utils.list_dir(db.path_pending)
+		for filename in files:
+			if filename[-4:] != ".txt": continue
+			sid = utils.parse_int(filename[:-4], -1)
+			if sid == -1: continue
+			if runnings.get(sid, None) != None: continue
+			if pendings.get(sid, None) != None: continue
+			pendings[sid] = 50
+		files = utils.list_dir(db.path_pending_rejudge)
+		for filename in files:
+			if filename[-4:] != ".txt": continue
+			sid = utils.parse_int(filename[:-4], -1)
+			if sid == -1: continue
+			if runnings.get(sid, None) != None: continue
+			if pendings.get(sid, None) != None: continue
+			pendings[sid] = 30
+		if len(pendings) == 0:
+			continue
+		max_sid = -1
+		for sid in pendings:
+			if (max_sid == -1) or (pendings[sid] > pendings[max_sid]):
+				max_sid = sid
+		if max_sid == -1:
+			continue
+		do_submit_to_pigeon(max_sid)
 
 
+
+judge_lock = threading.Lock()
 
 
 class myThread(threading.Thread):
@@ -120,5 +184,8 @@ class myThread(threading.Thread):
 	def run(self):
 		self.func()
 
-judge_server_thread = myThread("judgesrv", judge_server_thread_func)
-judge_server_thread.start()
+def start():
+	judge_server_thread = myThread("judgesrv", judge_server_thread_func)
+	judge_server_thread.start()
+	judge_server_running_thread = myThread("judgesrv-running", judge_server_running_thread_func)
+	judge_server_running_thread.start()
