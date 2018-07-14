@@ -581,6 +581,16 @@ def init_submissions():
 	for i in range(n_subs):
 		update_submission(i)
 
+def get_status_short_from_status(status):
+	return {
+		"Accepted": "AC",
+		"Wrong Answer": "WA",
+		"Time Limit Exceeded": "TLE",
+		"Memory Limit Exceeded": "MLE",
+		"Runtime Error": "RE",
+		"Judge Failed": "Failed",
+	}.get(status, "Done")
+
 def update_sub_using_json(sub, res, save = False):
 	time_ns = utils.parse_int("%s" % res["max_time_ns"], 0)
 	mem_kb = utils.parse_int("%s" % res["max_mem_kb"], 0)
@@ -588,7 +598,7 @@ def update_sub_using_json(sub, res, save = False):
 	status = res["status"]
 	status_short = res["status_short"]
 	if status_short == "":
-		status_short = "Done"
+		status_short = get_status_short_from_status(status)
 	sub["time"] = time_ns
 	sub["time_text"] = utils.render_time_ns(time_ns)
 	sub["memory"] = mem_kb
