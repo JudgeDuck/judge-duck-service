@@ -599,6 +599,11 @@ def update_sub_using_json(sub, res, save = False):
 	sub["status_short"] = status_short
 	if save:
 		utils.write_file(path_result + "%s.txt" % sub["sid"], json.dumps(res,indent=4,sort_keys=True))
+		sub["saved"] = True
+		sub["detail"] = ""
+	else:
+		sub["saved"] = False
+		sub["detail"] = json.dumps(res,indent=4,sort_keys=True)
 
 def update_submission(sid, new_judge_time = None):
 	global submissions
@@ -675,6 +680,7 @@ def update_submission(sid, new_judge_time = None):
 		"judge_time": judge_time,
 		"language": language,
 		"status_short": "",
+		"saved": True,
 	}
 	
 	sub["code_length_text"] = utils.render_code_length(sub["code_length"])

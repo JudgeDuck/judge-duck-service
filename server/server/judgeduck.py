@@ -387,7 +387,10 @@ def submission_view(req):
 		"<td style='font-size:13px'> %s </td>" % judge_time,
 	])
 	
-	res_content = utils.read_file(db.path_result + "%d.txt" % sid)
+	if sub["saved"]:
+		res_content = utils.read_file(db.path_result + "%d.txt" % sid)
+	else:
+		res_content = sub["detail"]
 	code_content = utils.read_file(db.path_code + "%d.txt" % sid)
 	
 	doc = htmldocs.submission_htmldoc
