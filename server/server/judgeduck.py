@@ -38,6 +38,7 @@ import json
 import re
 import hashlib
 import urllib
+import json
 
 from . import jd_htmldocs as htmldocs
 from . import jd_database as db
@@ -393,13 +394,67 @@ def submission_view(req):
 		res_content = sub["detail"]
 	code_content = utils.read_file(db.path_code + "%d.txt" % sid)
 	
+	try:
+		res = json.loads(res_content)
+		res = res["details"]
+	except:
+		res = []
+	
+	if len(res) == 0:
+		res_show = ""
+	else:
+		res_show = []
+		res_show.append('<div class="row"><div class="col-xs-12">')
+		detail_idx = 0
+		for detail in res:
+			detail_idx += 1
+			detail_id_DOM = "detail_%s" % detail_idx
+			detail_name = html.escape(detail["name"])
+			detail_time = html.escape(detail["time_ns"])
+			detail_memory = html.escape(detail["mem_kb"])
+			detail_score = html.escape("%s" % detail["score"])
+			detail_status = html.escape("%s" % detail["status"])
+			detail_alert_type = {
+				"Accepted": "alert-success",
+				"Compile OK": "alert-success",
+				"Wrong Answer": "alert-danger",
+				"Time Limit Exceeded": "alert-warning",
+				"Memory Limit Exceeded": "alert-info",
+				"Runtime Error": "alert-danger",
+			}.get(detail["status"], "alert-danger")
+			res_show.append("".join([
+				'<div class="alert %s">' % detail_alert_type,
+				'<div class="text-center row">',
+				'<table class="table table-borderless" style="margin:0px"><tr>'
+				'<td class="col-xs-2" style="vertical-align:middle;padding-left:20px;padding-right:20px"><b>%s</b></td>' % detail_name,
+				'<td class="col-xs-2" style="vertical-align:middle">%s</td>' % detail_time,
+				'<td class="col-xs-2" style="vertical-align:middle">%s</td>' % detail_memory,
+				'<td class="col-xs-2" style="vertical-align:middle">%s</td>' % detail_status,
+				'<td class="col-xs-2" style="vertical-align:middle">Score: %s</td>' % detail_score,
+				'<td class="col-xs-2" style="vertical-align:middle">',
+				'<a data-toggle="collapse" href="#%s" aria-expanded="false" aria-controls="%s">' % (detail_id_DOM, detail_id_DOM),
+				'显示更多',
+				'</a>',
+				'</td>',
+				'</tr></table>',
+				'</div>',
+				'<div class="collapse" id="%s">' % detail_id_DOM,
+				'<br />',
+				'<textarea class="form-control" style="background-color: white" rows="8" readonly>%s</textarea>' % html.escape(detail["detail"]),
+				'</div>',
+				'</div>',
+			]))
+		res_show.append('</div></div>')
+		res_show = "".join(res_show)
+		res_show = '<label for="result"> 评测结果 </label>' + res_show
+	
 	doc = htmldocs.submission_htmldoc
 	args = (
 		sid,
 		detail1,
 		detail2,
-		html.escape(res_content),
 		html.escape(code_content),
+		res_show,
 	)
 	return render_view(req, "提交记录 %s" % sid, doc % args)
 
