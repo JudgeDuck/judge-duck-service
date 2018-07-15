@@ -1,0 +1,61 @@
+	<style type="text/css">
+		.large-text {
+			font-size: 50px;
+		}
+		.has-margin {
+			margin-left: 10px;
+			margin-right: 10px;
+			margin-top: 20px;
+			margin-bottom: 20px;
+		}
+		.has-padding {
+			padding-top: 50px;
+			padding-bottom: 50px;
+		}
+		.has-checked {
+			border: dashed #888 10px;
+		}
+	</style>
+	
+	<div class="row has-margin">
+		<div class="col-xs-12 text-center has-padding" style="border: solid green 1px">
+			<p class="large-text" id="problem_text"> </p>
+		</div>
+	</div>
+	
+	<div class="row has-margin">
+		<div class="col-xs-12 alert alert-success text-center has-padding" id="option_div_1">
+			<p class="large-text" id="option_text_1"> </p>
+		</div>
+	</div>
+	<div class="row has-margin">
+		<div class="col-xs-12 alert alert-info text-center has-padding" id="option_div_2">
+			<p class="large-text" id="option_text_2"> </p>
+		</div>
+	</div>
+	<div class="row has-margin">
+		<div class="col-xs-12 alert alert-warning text-center has-padding" id="option_div_3">
+			<p class="large-text" id="option_text_3"> </p>
+		</div>
+	</div>
+	<div class="row has-margin">
+		<div class="col-xs-12 alert alert-danger text-center has-padding" id="option_div_4">
+			<p class="large-text" id="option_text_4"> </p>
+		</div>
+	</div>
+	
+	<div class="row has-margin" style="display:none;" id="submit_div">
+		<div class="col-xs-12 text-center has-padding">
+			<button class="btn btn-success large-text" id="submit_button"> 提交 </button>
+		</div>
+	</div>
+	
+	<script src="/js/beibishi.js"></script>
+	
+	<hr />
+	
+	<div class="row">
+		<p style="text-align: center; color: #888">
+			您是第 %s 个背笔试的
+		</p>
+	</div>

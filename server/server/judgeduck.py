@@ -555,6 +555,9 @@ def do_edit_blog(req):
 	content = req.POST.get("content", "")
 	return json_response(req, db.do_edit_blog(req, bid, title, content))
 
+def beibishi_view(req):
+	return render_view(req, "背笔试！", htmldocs.beibishi_htmldoc % db.do_get_beibishi_count())
+
 
 
 
@@ -631,6 +634,9 @@ def entry(req):
 		return blog_edit_view(req)
 	if path == "/blog/do_edit":
 		return do_edit_blog(req)
+	
+	if path == "/beibishi":
+		return beibishi_view(req)
 	
 	raise Http404()
 #

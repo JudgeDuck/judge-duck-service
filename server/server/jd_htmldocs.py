@@ -17,6 +17,8 @@ profile_htmldoc = utils.read_file(path_htmldocs + "profile.html")
 profile_self_htmldoc = utils.read_file(path_htmldocs + "profile_self.html")
 edit_profile_htmldoc = utils.read_file(path_htmldocs + "edit_profile.html")
 
+beibishi_htmldoc = utils.read_file(path_htmldocs + "beibishi.html")
+
 problems_htmldoc = utils.read_file(path_htmldocs + "problems.html")
 problems_problem = """
 				<tr>

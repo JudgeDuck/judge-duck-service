@@ -40,6 +40,16 @@ blogs = None
 last_blog_id = 0
 
 
+def do_get_beibishi_count():
+	lock.acquire()
+	fname = path_prefix + "beibishi_count.txt"
+	content = utils.read_file(fname)
+	ret = utils.parse_int(content, 0)
+	ret = ret + 1
+	utils.write_file(fname, "%s" % ret)
+	lock.release()
+	return ret
+
 def do_get_problem_list():
 	lock.acquire()
 	ret = []
