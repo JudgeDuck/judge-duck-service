@@ -510,17 +510,6 @@ def init_problems():
 			continue
 		if not add_problem(pid):
 			continue
-		temp_zipname = "temp.zip"
-		cmdstr = "cd %s%s/ && zip -r ../../../%s%s *" % (path_problems, pid, path_temp, temp_zipname)
-		utils.system(
-			"bash",
-			["-c", cmdstr],
-			30,
-		)
-		md5 = utils.md5sum_b(utils.read_file_b(path_temp + temp_zipname))
-		problems[pid]["md5"] = md5
-		utils.rename(path_temp + temp_zipname, path_problem_zips + md5)
-		print("md5 of problem %s is %s" % (pid, md5))
 
 def add_problem(pid):
 	prob = {
@@ -676,7 +665,7 @@ def update_submission(sid, new_judge_time = None):
 	sub = {
 		"sid": sid,
 		"pid": pid,
-		"status": "Judge Failed",
+		"status": "Unknown",
 		"time": None,
 		"time_text": "N/A",
 		"memory": None,

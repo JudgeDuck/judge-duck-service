@@ -184,8 +184,27 @@ class myThread(threading.Thread):
 	def run(self):
 		self.func()
 
-def start():
+def start_thread_func():
+	li = db.do_get_problem_list()
+	for pid in li:
+		temp_zipname = "temp.zip"
+		cmdstr = "cd %s%s/ && zip -r ../../../%s%s *" % (db.path_problems, pid, db.path_temp, temp_zipname)
+		utils.system(
+			"bash",
+			["-c", cmdstr],
+			60,
+		)
+		md5 = utils.md5sum_b(utils.read_file_b(db.path_temp + temp_zipname))
+		pinfo = db.do_get_problem_info(pid)
+		pinfo["md5"] = md5
+		utils.rename(db.path_temp + temp_zipname, db.path_problem_zips + md5)
+		print("md5 of problem %s is %s" % (pid, md5))
+	print("Starting judge server threads")
 	judge_server_thread = myThread("judgesrv", judge_server_thread_func)
 	judge_server_thread.start()
 	judge_server_running_thread = myThread("judgesrv-running", judge_server_running_thread_func)
 	judge_server_running_thread.start()
+
+def start():
+	start_thread = myThread("start-judgesrv", start_thread_func)
+	start_thread.start()
