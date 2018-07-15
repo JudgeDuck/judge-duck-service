@@ -111,10 +111,31 @@ var beibishi = function() {
 		}
 	};
 	
+	var problem_history = [];
+	
 	var show_random_problem = function() {
-		pid = Math.floor(Math.random() * all_probs.length);
-		if (pid < 0) pid = 0;
-		if (pid >= all_probs.length) pid = all_probs.length - 1;
+		var pid;
+		while (true) {
+			pid = Math.floor(Math.random() * all_probs.length);
+			if (pid < 0) pid = 0;
+			if (pid >= all_probs.length) pid = all_probs.length - 1;
+			var ok = true;
+			for (var i in problem_history) {
+				if (problem_history[i] == pid) {
+					ok = false;
+					break;
+				}
+			}
+			if (ok) break;
+		}
+		problem_history.push(pid);
+		if (problem_history.length > all_probs.length / 2) {
+			var tmp = [];
+			for (var i = 1; i < problem_history.length; i++) {
+				tmp.push(problem_history[i]);
+			}
+			problem_history = tmp;
+		}
 		show_problem(all_probs[pid]);
 	};
 	
