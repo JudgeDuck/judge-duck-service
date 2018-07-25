@@ -27,10 +27,13 @@
 					%s
 				</tr>
 			</table>
-			
+			<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.12.0/build/styles/tomorrow.min.css">
+			<script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.12.0/build/highlight.min.js"></script>
+			<script>hljs.initHighlightingOnLoad();</script>
 			<div class="row">
 				<label for="code"> 代码 </label>
-				<textarea id="code" class="form-control" rows="20" readonly>%s</textarea>
+				<pre style="background-color:white"><code>%s
+				</code></pre>
 				<br />
 				
 				%s
