@@ -23,13 +23,14 @@ runnings_lock = threading.Lock()
 
 
 def do_post(url, data_dict):
-	try:
-		data = urllib.parse.urlencode(data_dict).encode()
-		req = urllib.request.Request(url, data=data)
-		res = urllib.request.urlopen(req)
-		return res.read().decode('utf-8')
-	except:
-		return ""
+	while True:
+		try:
+			data = urllib.parse.urlencode(data_dict).encode()
+			req = urllib.request.Request(url, data=data)
+			res = urllib.request.urlopen(req)
+			return res.read().decode('utf-8')
+		except:
+			time.sleep(1)
 
 
 
@@ -81,7 +82,7 @@ def do_submit_to_pigeon(sid):
 		"sub": sub,
 		"language": sub["language"],
 	}
-	do_send_problem_file(prob["md5"])
+	#do_send_problem_file(prob["md5"])
 	task["contestant_md5"] = do_send_contestant_files(db.path_code + "%s.txt" % sid, sub["language"])
 	res = do_post(PIGEON_URL + "api/submit_task", {
 		"taskid": task["task_id"],
@@ -187,17 +188,9 @@ class myThread(threading.Thread):
 def start_thread_func():
 	li = db.do_get_problem_list()
 	for pid in li:
-		temp_zipname = "temp.zip"
-		cmdstr = "cd %s%s/ && zip -r ../../../%s%s *" % (db.path_problems, pid, db.path_temp, temp_zipname)
-		utils.system(
-			"bash",
-			["-c", cmdstr],
-			60,
-		)
-		md5 = utils.md5sum_b(utils.read_file_b(db.path_temp + temp_zipname))
 		pinfo = db.do_get_problem_info(pid)
+		md5 = "judgeduck-problems/" + pid
 		pinfo["md5"] = md5
-		utils.rename(db.path_temp + temp_zipname, db.path_problem_zips + md5)
 		print("md5 of problem %s is %s" % (pid, md5))
 	print("Starting judge server threads")
 	judge_server_thread = myThread("judgesrv", judge_server_thread_func)
