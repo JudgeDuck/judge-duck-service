@@ -20,7 +20,7 @@
 * `server/jd_data/result/`
 * `server/jd_data/temp/`
 * `server/jd_data/users/`
-* Django migration
+* Django migration (**Please Ctrl-C the migration process when it stucks, since the judge thread started with the server would cause an infinity loop in background**)
 
 ## Running
 
