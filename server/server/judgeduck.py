@@ -162,7 +162,35 @@ def rand_signature_view(req):
 
 def problems_view(req):
 	# TODO: 考虑用户是否 AC 这道题
-	plist = db.do_get_problem_list()
+	problem_class = req.GET.get("class", "")
+	problem_classes = [
+		"",
+		"traditional",
+		"model",
+		"contest",
+	]
+	problem_classes_names = [
+		"全部题目",
+		"传统题",
+		"模板题",
+		"比赛题",
+	]
+	if not problem_class in problem_classes:
+		problem_class = ""
+	doc_classes = []
+	for idx in range(len(problem_classes)):
+		class_id = problem_classes[idx]
+		class_name = problem_classes_names[idx]
+		active_str = 'class="active"' if class_id == problem_class else ''
+		href_str = "/problems?class=%s" % class_id
+		if class_id == "":
+			href_str = "/problems"
+		doc_classes.append(
+			'<li role="presentation"%s><a href="%s">%s</a></li>' % (active_str, href_str, class_name)
+		)
+	doc_classes = "".join(doc_classes)
+	
+	plist = db.do_get_problem_list(problem_class)
 	ret = []
 	for pid in plist:
 		pinfo = db.do_get_problem_info(pid)
@@ -171,7 +199,7 @@ def problems_view(req):
 		name = html.escape(pinfo["name"])
 		description = "%s %s, %s" % (html.escape(pinfo["description"]), pinfo["time_limit_text"], pinfo["memory_limit_text"])
 		ret.append(htmldocs.problems_problem % (pid, pid, name, description))
-	return render_view(req, "题目列表", htmldocs.problems_htmldoc % "\n".join(ret))
+	return render_view(req, "题目列表", htmldocs.problems_htmldoc % (doc_classes, "\n".join(ret)))
 
 def problem_view(req):
 	pid = req.path[len("/problem/"):]

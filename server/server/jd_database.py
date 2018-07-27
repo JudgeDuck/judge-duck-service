@@ -50,10 +50,12 @@ def do_get_beibishi_count():
 	lock.release()
 	return ret
 
-def do_get_problem_list():
+def do_get_problem_list(problem_class = ""):
 	lock.acquire()
 	ret = []
 	for pid in problems:
+		if problem_class != "":
+			if problems[pid]["class"] != problem_class: continue
 		ret.append(pid)
 	lock.release()
 	return sorted(ret)
@@ -532,6 +534,7 @@ def add_problem(pid):
 		"memory_limit_text": "",
 		"files": [],
 		"statement": "",
+		"class": "",
 	}
 	path = path_problems + pid + "/"
 	conf_content = utils.read_file(path + "config.txt").split("\n")
@@ -541,6 +544,7 @@ def add_problem(pid):
 		"time_limit",
 		"memory_limit",
 		"files",
+		"class",
 	]
 	for s in conf_content:
 		if s == "hidden":
