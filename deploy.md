@@ -25,7 +25,18 @@
 ## Running
 
 ```bash
-$ cd server
-$ python3 manage.py runserver <ip>:<port>
+
+cd server
+mkdir -p jd_data/temp/
+mkdir -p jd_data/problems/
+mkdir -p jd_data/code/
+mkdir -p jd_data/metadata/
+mkdir -p jd_data/result/
+mkdir -p jd_data/pending/
+mkdir -p jd_data/pending_rejudge/
+mkdir -p jd_data/users/
+mkdir -p jd_data/blogs/
+mkdir -p jd_data/problem_zips/
+python3 manage.py runserver <ip>:<port>
 ```
 
