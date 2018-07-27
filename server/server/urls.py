@@ -40,7 +40,7 @@ def entry(req):
 	req.jd_start_time = time.time()
 	host = req.META["HTTP_HOST"]
 	if host == "judge-duck.online:10086":
-		return HttpResponseRedirect("https://judge-duck.online")
+		return HttpResponseRedirect("https://judge-duck.online" + req.path)
 	if host.split(":")[0] == "judge-duck.online":
 		return judgeduck.entry(req)
 	if host.split(":")[0] == "local.judge-duck.online":
