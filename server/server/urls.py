@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.conf.urls import include, url
 from django.contrib import admin
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.template import loader, Context
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render_to_response
@@ -30,6 +30,7 @@ import subprocess
 import threading
 import time
 import datetime
+from django.http import Http404
 
 from . import new_oj
 from . import judgeduck
@@ -38,11 +39,13 @@ from . import judgeduck
 def entry(req):
 	req.jd_start_time = time.time()
 	host = req.META["HTTP_HOST"]
+	if host == "judge-duck.online:10086":
+		return HttpResponseRedirect("https://judge-duck.online")
 	if host.split(":")[0] == "judge-duck.online":
 		return judgeduck.entry(req)
 	if host.split(":")[0] == "local.judge-duck.online":
 		return judgeduck.entry(req)
-	return new_oj.entry(req)
+	raise Http404()
 
 #
 
