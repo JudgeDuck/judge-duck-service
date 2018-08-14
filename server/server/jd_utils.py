@@ -97,14 +97,8 @@ def write_file_b(name, content):
 	except:
 		pass
 
-def get_file_mtime(name, fallback = ""):
-	try:
-		return datetime.datetime.fromtimestamp(os.stat(name).st_mtime + 3600 * 8).strftime('%Y-%m-%d %H:%M:%S')
-	except:
-		return fallback
-
 def get_current_time():
-	return datetime.datetime.fromtimestamp(time.time() + 3600 * 8).strftime('%Y-%m-%d %H:%M:%S')
+	return (datetime.datetime.utcnow() + datetime.timedelta(hours=8)).strftime('%Y-%m-%d %H:%M:%S')
 
 
 def render_time_ns(tl):
