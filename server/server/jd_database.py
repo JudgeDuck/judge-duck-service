@@ -2,6 +2,10 @@
 
 # This file is for data store
 
+from . import jd_sql as sql
+
+db_version = "20180814-1"
+
 path_prefix = "jd_data/"
 path_temp = path_prefix + "temp/"
 path_problems = path_prefix + "problems/"
@@ -32,10 +36,6 @@ lock = Lock()
 from . import jd_utils as utils
 import os
 
-users = None
-problems = None
-submissions = None
-last_sub_id = 0
 blogs = None
 last_blog_id = 0
 
@@ -52,17 +52,41 @@ def do_get_beibishi_count():
 
 def do_get_problem_list(problem_class = ""):
 	lock.acquire()
-	ret = []
-	for pid in problems:
-		if problem_class != "":
-			if problems[pid]["class"] != problem_class: continue
-		ret.append(pid)
+	sql.begin()
+	# TODO admin mode
+	sql.has_error = False
+	if problem_class == "":
+		res = sql.query("select `pid`, `name`, `description`, `time_limit`, `memory_limit` from `problems` where `hidden` = 0 order by `pid`")
+	else:
+		res = sql.query("select `pid`, `name`, `description`, `time_limit`, `memory_limit` from `problems` where `hidden` = 0 and `class` = ? order by `pid`", (problem_class, ))
+	if sql.has_error:
+		res = []
+	sql.rollback()
+	
+	for i in range(len(res)):
+		p = dict(res[i])
+		p["time_limit_text"] = utils.render_time_ns(p["time_limit"])
+		p["memory_limit_text"] = utils.render_memory_kb(p["memory_limit"])
+		res[i] = p
+	
 	lock.release()
-	return sorted(ret)
+	return res
 
 def do_get_problem_info(pid):
 	lock.acquire()
-	ret = problems.get(pid, None)
+	sql.begin()
+	# TODO admin mode
+	sql.has_error = False
+	res = sql.query("select * from `problems` where `hidden` = 0 and `pid` = ?", (pid, ))
+	if sql.has_error:
+		res = []
+	sql.rollback()
+	if len(res) != 1:
+		ret = None
+	else:
+		ret = dict(res[0])
+		ret["time_limit_text"] = utils.render_time_ns(ret["time_limit"])
+		ret["memory_limit_text"] = utils.render_memory_kb(ret["memory_limit"])
 	lock.release()
 	return ret
 
@@ -81,79 +105,99 @@ def do_submit(req, pid, language, code):
 		return ret
 	
 	lock.acquire()
-	user = users.get(name, None)
-	user["language"] = language
-	write_user_profile(user)
+	sql.begin()
+	sql.has_error = False
 	
-	pinfo = problems.get(pid, None)
-	if pinfo == None:
+	sql.query("update `users` set `language` = ? where `username` = ?", (language, name))
+	
+	pcnt = sql.query_value("select count(*) from `problems` where `pid` = ?", (pid, ))
+	
+	if sql.has_error:
+		sql.rollback()
+		lock.release()
+		ret["error"] = "系统错误，请联系管理员"
+		return ret
+	
+	if pcnt != 1:
+		sql.rollback()
 		lock.release()
 		ret["error"] = "题目不存在"
 		return ret
 	
 	if len(code) > 100 * 1024:
+		sql.rollback()
 		lock.release()
 		ret["error"] = "代码太长"
 		return ret
 	
-	global last_sub_id
-	sid = last_sub_id
+	sql.query(
+		"insert into `submissions` (`pid`, `code`, `code_length`, `submit_time`, `player_name`, `language`) values (?,?,?,?,?,?)",
+		(pid, code, len(code), utils.get_current_time(), name, language)
+	)
+	
+	if sql.has_error:
+		sql.rollback()
+		lock.release()
+		ret["error"] = "系统错误，请联系管理员"
+		return ret
+	
+	sid = sql.query_value("select last_insert_rowid()")
+	
+	if sql.has_error:
+		sql.rollback()
+		lock.release()
+		ret["error"] = "系统错误，请联系管理员"
+		return ret
+	
+	sql.commit()
+	
 	print("sid %s, pid %s, name %s" % (sid, pid, name))
-	try:
-		code_to_write = code
-		utils.write_file(path_temp + "code.txt", code_to_write)
-		utils.write_file(path_temp + "code_copy.txt", code_to_write)
-		meta = "player_name %s\n" % name
-		meta += "submit_time %s\n" % utils.get_current_time()
-		meta += "pid %s\n" % pid
-		meta += "language %s\n" % language
-		utils.write_file(path_temp + "meta.txt", meta)
-		os.rename(path_temp + "meta.txt", path_metadata + "%d.txt" % sid)
-		os.rename(path_temp + "code.txt", path_code + "%d.txt" % sid)
-		os.rename(path_temp + "code_copy.txt", path_pending + "%d.txt" % sid)
-		update_submission(sid)
-		last_sub_id += 1
-		lock.release()
-		ret["status"] = "success"
-		return ret
-	except:
-		lock.release()
-		ret["error"] = "系统错误"
-		return ret
+	utils.write_file(path_pending + "%d.txt" % sid, "")
+	
+	lock.release()
+	ret["status"] = "success"
+	return ret
 
 def do_get_submission(sid):
 	lock.acquire()
-	ret = submissions.get(sid, None)
+	sql.begin()
+	# TODO hidden ?
+	res = sql.query("select * from `submissions` where `sid` = ?", (sid, ))
+	if len(res) != 1:
+		sql.rollback()
+		lock.release()
+		return None
+	sql.rollback()
+	
+	ret = dict(res[0])
+	ret["code_length_text"] = utils.render_code_length(ret["code_length"])
+	ret["time_text"] = utils.render_time_ns(ret["time"])
+	ret["memory_text"] = utils.render_memory_kb(ret["memory"])
+	ret["score_text"] = "%.0lf" % ret["score"]
+	ret["name"] = ret["player_name"]
+	
 	lock.release()
 	return ret
 
 
 def do_get_board(pid):
 	lock.acquire()
-	pinfo = problems.get(pid, None)
-	if pinfo == None:
-		lock.release()
-		return []
-	board_map = {}
-	for i in submissions:
-		sub = submissions[i]
-		if sub["pid"] != pid:
-			continue
-		if sub["status"] != "Accepted":
-			continue
-		player_name = sub["name"]
-		time_ms = sub["time"]
-		if not (player_name in board_map) or time_ms < board_map[player_name][0]:
-			board_map[player_name] = [time_ms, sub["sid"]]
-	board = []
-	for i in board_map:
-		board.append(board_map[i])
-	board = sorted(board)[:100]
-	ret = []
-	for row in board:
-		ret.append(submissions[row[1]])
+	sql.begin()
+	sql.has_error = False
+	board = sql.query("select `username` as 'name', `sid`, min(`time`) as `time`, `memory`, `code_length`, `submit_time` from `users`, `submissions` where `username` = `player_name` and `pid` = ? and `status` = 'Accepted' group by `username` order by `time` limit 100", (pid, ))
+	if sql.has_error:
+		board = []
+	sql.rollback()
+	
+	for i in range(len(board)):
+		ret = dict(board[i])
+		ret["code_length_text"] = utils.render_code_length(ret["code_length"])
+		ret["time_text"] = utils.render_time_ns(ret["time"])
+		ret["memory_text"] = utils.render_memory_kb(ret["memory"])
+		board[i] = ret
+	
 	lock.release()
-	return ret
+	return board
 
 
 def encrypt_password(password):
@@ -175,19 +219,27 @@ def do_register(username, email, password):
 		return ret
 	
 	lock.acquire()
-	global users
-	if users.get(username, None) != None:
+	sql.begin()
+	
+	if sql.query_value("select count(*) from `users` where `username` = ?", (username, )) != 0:
 		ret["error"] = "用户名已被使用！"
+		sql.rollback()
 		lock.release()
 		return ret
-	user = {
-		"username": username,
-		"email": email,
-		"password": encrypt_password(password),
-		"signature": rand_signature(),
-	}
-	write_user_profile(user)
-	add_user(username)
+	
+	sql.has_error = False
+	sql.query(
+		"insert into `users` (`username`, `email`, `password`, `signature`, `register_time`) values (?,?,?,?,?)",
+		(username, email, encrypt_password(password), rand_signature(), utils.get_current_time())
+	)
+	
+	if sql.has_error:
+		ret["error"] = "系统错误，请联系管理员"
+		sql.rollback()
+		lock.release()
+		return ret
+	
+	sql.commit()
 	lock.release()
 	return {"status": "success"}
 
@@ -215,7 +267,9 @@ def do_login(req, username, password):
 		ret["error"] = "您已经在线了"
 		return ret
 	lock.acquire()
+	sql.begin()
 	res = check_user_password(username, password)
+	sql.rollback()
 	lock.release()
 	if not res:
 		ret["error"] = "用户名或密码错误"
@@ -225,11 +279,10 @@ def do_login(req, username, password):
 	return ret
 
 def check_user_password(username, password):
-	global users
-	user = users.get(username, None)
-	if user == None:
+	pw = sql.query_value("select `password` from `users` where `username` = ?", (username, ))
+	if pw == None:
 		return False
-	if user["password"] != encrypt_password(password):
+	if pw != encrypt_password(password):
 		return False
 	return True
 
@@ -238,18 +291,22 @@ def do_logout(req):
 
 def do_get_user_info(username):
 	lock.acquire()
-	global users
-	ret = users.get(username, None)
+	sql.begin()
+	users = sql.query("select * from `users` where `username` = ?", (username, ))
+	sql.rollback()
+	
+	user = None
+	if len(users) == 1:
+		user = users[0]
+	
 	lock.release()
-	return ret
+	return user
 
 def do_rand_signature(username):
 	lock.acquire()
-	global users
-	user = users.get(username, None)
-	if user != None:
-		user["signature"] = rand_signature()
-		write_user_profile(user)
+	sql.begin()
+	sql.query("update `users` set `signature` = ? where `username` = ?", (rand_signature(), username))
+	sql.commit()
 	lock.release()
 
 def do_edit_profile(req, password, email, new_password, signature):
@@ -272,18 +329,28 @@ def do_edit_profile(req, password, email, new_password, signature):
 		return ret
 	
 	lock.acquire()
+	sql.begin()
 	if not check_user_password(username, password):
 		ret["error"] = "原密码不正确！"
+		sql.rollback()
 		lock.release()
 		return ret
-	global users
-	user = users.get(username, None)
-	if user != None:
-		if new_password != "":
-			user["password"] = encrypt_password(new_password)
-		user["email"] = email
-		user["signature"] = signature
-		write_user_profile(user)
+	cnt = sql.query_value("select count(*) from `users` where `username` = ?", (username, ))
+	if cnt != 0:
+		ret["error"] = "用户名已被使用！"
+		sql.rollback()
+		lock.release()
+		return ret
+	sql.has_error = False
+	if new_password != "":
+		sql.query("update `users` set `password` = ? where `username` = ?", (encrypt_password(new_password), username))
+	sql.query("update `users` set `email` = ?, `signature` = ? where `username` = ?", (email, signature, username))
+	if sql.has_error:
+		ret["error"] = "系统错误，请联系管理员"
+		sql.rollback()
+		lock.release()
+		return ret
+	sql.commit()
 	lock.release()
 	ret["status"] = "success"
 	ret["username"] = username
@@ -291,25 +358,38 @@ def do_edit_profile(req, password, email, new_password, signature):
 	
 #
 
-def do_get_submissions(pid, username, score1, score2):
+def do_get_submissions(pid, username, score1, score2, st, cnt):
 	lock.acquire()
-	global submissions
-	res = {}
-	for sub in submissions.values():
-		if (pid != "") and (sub["pid"] != pid):
-			continue
-		if (username != "") and (sub["name"] != username):
-			continue
-		score = sub["score"]
-		if (score < score1) or (score > score2):
-			continue
-		res[-sub["sid"]] = sub
-	keys = sorted(res.keys())
-	ret = []
-	for k in keys:
-		ret.append(res[k])
+	sql.begin()
+	stmt = "select `sid`, `player_name`, `pid`, `score`, `time`, `memory`, `code_length`, `submit_time`, `language`, `status_short` from `submissions` where 1"
+	params = []
+	if (score1 != 0) or (score2 != 100):
+		stmt += " and `score` >= ? and `score` <= ?"
+		params.append(score1)
+		params.append(score2)
+	if pid != "":
+		stmt += " and `pid` = ?"
+		params.append(pid)
+	if username != "":
+		stmt += " and `player_name` = ?"
+		params.append(username)
+	stmt += " order by `sid` desc limit ?, ?"
+	params.append(st)
+	params.append(cnt)
+	res = sql.query(stmt, params)
+	sql.rollback()
+	
+	for i in range(len(res)):
+		res[i] = dict(res[i])
+		ret = res[i]
+		ret["code_length_text"] = utils.render_code_length(ret["code_length"])
+		ret["time_text"] = utils.render_time_ns(ret["time"])
+		ret["memory_text"] = utils.render_memory_kb(ret["memory"])
+		ret["score_text"] = "%.0lf" % ret["score"]
+		ret["name"] = ret["player_name"]
+	
 	lock.release()
-	return ret
+	return res
 
 #
 
@@ -451,6 +531,7 @@ def do_edit_blog(req, bid, title, content):
 
 def init():
 	lock.acquire()
+	check_db_version()
 	init_users()
 	init_problems()
 	init_submissions()
@@ -461,128 +542,27 @@ def reload():
 	init()
 #
 
+def check_db_version():
+	global db_version
+	version = sql.query("select `value` from jd_meta where `key`='version'")[0][0]
+	if version != db_version:
+		raise "GG, wrong DB version"
+	print("DB version checked")
+
 def init_users():
-	global users
-	users = {}
-	li = utils.list_dir(path_users)
-	for filename in li:
-		if filename[-4:] != ".txt":
-			continue
-		username = filename[:-4]
-		add_user(username)
-	print("total %d users" % len(users))
-
-def add_user(username):
-	global users
-	filename = path_users + username + ".txt"
-	content = utils.read_file(filename).split("\n")
-	user = {
-		"username": username,
-		"email": "",
-		"password": "",
-		"signature": "",
-		"language": "C++",
-	}
-	keys = [
-		"email",
-		"password",
-		"signature",
-		"language",
-	]
-	for s in content:
-		match_k = None
-		for k in keys:
-			if s[:len(k)] == k:
-				match_k = k
-				break
-		if match_k != None:
-			val = s[len(match_k) + 1:]
-			user[match_k] = val
-	users[username] = user
-
-def write_user_profile(user):
-	filename = path_users + user["username"] + ".txt"
-	temp_filename = path_temp + "tmp_user.txt"
-	f = open(temp_filename, "w")
-	f.write("\n".join(["%s %s" % (k, user[k]) for k in user]))
-	f.close()
-	try:
-		os.rename(temp_filename, filename)
-	except:
-		print("Error: write user [%s]'s profile failed" % user["username"])
+	pass
+	# Yeah, nothing to init
 
 def init_problems():
-	global problems
-	problems = {}
-	li = utils.list_dir(path_problems)
-	utils.mkdir(path_problem_zips)
-	utils.system("rm", ["-rf", path_problem_zips + "*"])
-	for pid in li:
-		if pid[:1] == ".":
-			continue
-		if not add_problem(pid):
-			continue
-
-def add_problem(pid):
-	prob = {
-		"pid": pid,
-		"name": "不知道",
-		"description": "不存在的",
-		"time_limit": 1000,
-		"memory_limit": 4,
-		"time_limit_text": "",
-		"memory_limit_text": "",
-		"files": [],
-		"statement": "",
-		"class": "",
-	}
-	path = path_problems + pid + "/"
-	conf_content = utils.read_file(path + "config.txt").split("\n")
-	keys = [
-		"name",
-		"description",
-		"time_limit",
-		"memory_limit",
-		"files",
-		"class",
-	]
-	for s in conf_content:
-		if s == "hidden":
-			# Hide this problem
-			return False
-		match_k = None
-		for k in keys:
-			if s[:len(k)] == k:
-				match_k = k
-				break
-		if match_k != None:
-			val = s[len(match_k) + 1:]
-			if match_k == "time_limit" or match_k == "memory_limit":
-				val = int(val)
-				if val <= 0:
-					val = 1
-			if match_k == "files":
-				val = val.split(" ")
-			prob[match_k] = val
-	prob["statement"] = utils.read_file(path + "statement.md", "咕咕咕")
-	prob["sample_code"] = utils.read_file(path + "sample.cpp", "咕咕咕")
-	prob["time_limit_text"] = utils.render_time_ns(int(prob["time_limit"]))
-	prob["memory_limit_text"] = utils.render_memory_kb(int(prob["memory_limit"]))
-	problems[pid] = prob
-	return True
-
+	pass
 
 
 #
 
 def init_submissions():
-	global submissions
-	submissions = {}
-	n_subs = len(utils.list_dir(path_code))
-	global last_sub_id
-	last_sub_id = n_subs
-	for i in range(n_subs):
-		update_submission(i)
+	sql.begin()
+	sql.query("update `submissions` set `detail` = '', `status` = 'Unknown', `status_short` = '' where `saved` = 0")
+	sql.commit()
 
 def get_status_short_from_status(status):
 	return {
@@ -594,7 +574,7 @@ def get_status_short_from_status(status):
 		"Judge Failed": "Failed",
 	}.get(status, "Done")
 
-def update_sub_using_json(sub, res, save = False):
+def do_update_sub_using_json(sid, res, save = False):
 	time_ns = utils.parse_int("%s" % res["max_time_ns"], 0)
 	mem_kb = utils.parse_int("%s" % res["max_mem_kb"], 0)
 	score = utils.parse_float(res["score"], 0)
@@ -602,110 +582,18 @@ def update_sub_using_json(sub, res, save = False):
 	status_short = res["status_short"]
 	if status_short == "":
 		status_short = get_status_short_from_status(status)
-	sub["time"] = time_ns
-	sub["time_text"] = utils.render_time_ns(time_ns)
-	sub["memory"] = mem_kb
-	sub["memory_text"] = utils.render_memory_kb(mem_kb)
-	sub["score"] = score
-	sub["score_text"] = "%.0lf" % score
-	sub["status"] = status
-	sub["status_short"] = status_short
-	if save:
-		utils.write_file(path_result + "%s.txt" % sub["sid"], json.dumps(res,indent=4,sort_keys=True))
-		sub["saved"] = True
-		sub["detail"] = ""
-	else:
-		sub["saved"] = False
-		sub["detail"] = json.dumps(res,indent=4,sort_keys=True)
-
-def update_submission(sid, new_judge_time = None):
-	global submissions
-	global problems
-	
-	metadata_filename = path_metadata + "%d.txt" % sid
-	metadata_content = utils.read_file(metadata_filename).split("\n")
-	if new_judge_time != None:
-		tmp = ["judge_time %s" % new_judge_time]
-		for s in metadata_content:
-			if s[:len("judge_time ")] == "judge_time ":
-				continue
-			tmp.append(s)
-		metadata_content = tmp
-		try:
-			f = open(metadata_filename, "w")
-			f.write("\n".join(tmp))
-			f.close()
-		except:
-			pass
-	
-	player_name = "咕咕咕"
-	submit_time = "不存在的"
-	judge_time = "N/A"
-	pid = ""
-	keys = [
-		"judge_time",
-		"player_name",
-		"submit_time",
-		"pid",
-		"language",
-	]
-	language = "C"
-	for s in metadata_content:
-		if s == "hidden":
-			if submissions.get(sid, None) != None:
-				del submissions[sid]
-			return
-		match_k = None
-		match_content = None
-		for k in keys:
-			if s[:len(k)] == k:
-				match_k = k
-				match_content = s[len(k) + 1:]
-				break
-		if match_k == None:
-			continue
-		if match_k == "judge_time":
-			judge_time = match_content
-		if match_k == "submit_time":
-			submit_time = match_content
-		if match_k == "player_name":
-			player_name = match_content
-		if match_k == "pid":
-			pid = match_content
-		if match_k == "language":
-			language = match_content
-	
-	
-	sub = {
-		"sid": sid,
-		"pid": pid,
-		"status": "Unknown",
-		"time": None,
-		"time_text": "N/A",
-		"memory": None,
-		"memory_text": "N/A",
-		"score": 0,
-		"score_text": "N/A",
-		"code_length": len(utils.read_file(path_code + "%d.txt" % sid)),
-		"code_length_text": "N/A",
-		"name": player_name,
-		"submit_time": submit_time,
-		"judge_time": judge_time,
-		"language": language,
-		"status_short": "",
-		"saved": True,
-	}
-	
-	sub["code_length_text"] = utils.render_code_length(sub["code_length"])
-	
-	res = utils.read_file(path_result + "%s.txt" % sid)
-	try:
-		res = json.loads(res)
-		update_sub_using_json(sub, res)
-	except:
-		pass
-	
-	submissions[sid] = sub
+	detail = json.dumps(res,indent=4,sort_keys=True)
+	saved = 1 if save else 0
+	lock.acquire()
+	sql.begin()
+	sql.query(
+		"update `submissions` set `time` = ?, `memory` = ?, `score` = ?, `status` = ?, `status_short` = ?, `detail` = ?, `saved` = ? where `sid` = ?",
+		(time_ns, mem_kb, score, status, status_short, detail, saved, sid)
+	)
+	if saved:
+		sql.query("update `submissions` set `judge_time` = ? where sid = ?", (utils.get_current_time(), sid))
+	sql.commit()
+	lock.release()
 
 #
 

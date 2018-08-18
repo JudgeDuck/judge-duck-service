@@ -192,10 +192,8 @@ def problems_view(req):
 	
 	plist = db.do_get_problem_list(problem_class)
 	ret = []
-	for pid in plist:
-		pinfo = db.do_get_problem_info(pid)
-		if pinfo == None:
-			continue
+	for pinfo in plist:
+		pid = pinfo["pid"]
 		name = html.escape(pinfo["name"])
 		description = "%s %s, %s" % (html.escape(pinfo["description"]), pinfo["time_limit_text"], pinfo["memory_limit_text"])
 		ret.append(htmldocs.problems_problem % (pid, pid, name, description))
@@ -221,7 +219,7 @@ def render_problem(req, pinfo):
 	ret += "时间限制： %s <br />" % pinfo["time_limit_text"]
 	ret += "空间限制： %s <br />" % pinfo["memory_limit_text"]
 	ret += "<br />"
-	ret += markdown2.markdown(pinfo["statement"])
+	ret += pinfo["statement_html"]
 	ret += "<hr />"
 	ret += htmldocs.problem_page_submit_htmldoc % (pinfo["pid"], languages_doc, html.escape(pinfo["sample_code"]))
 	return ret
@@ -292,17 +290,19 @@ def submissions_view(req):
 	page = utils.parse_int(page, 1)
 	if page <= 0:
 		page = 1
-	
-	subs = db.do_get_submissions(pid, username, score1, score2)
+	if page >= 100000000:
+		page = 100000000
+	subs = db.do_get_submissions(pid, username, score1, score2, (page - 1) * 10, 10 * 5)
 	n_subs = len(subs)
-	n_pages = (n_subs - 1) // 10 + 1
+	n_pages = page - 1 + (n_subs + 10 - 1) // 10
+	
+	subs = subs[:10]
+	
 	if n_pages < 1:
 		n_pages = 1
 	
 	if page > n_pages:
-		page = n_pages
-	
-	subs = subs[(page - 1) * 10 : page * 10]
+		page = n_pages + 1
 	
 	pagination = ""
 	if n_pages > 1:
@@ -416,11 +416,8 @@ def submission_view(req):
 		"<td style='font-size:13px'> %s </td>" % judge_time,
 	])
 	
-	if sub["saved"]:
-		res_content = utils.read_file(db.path_result + "%d.txt" % sid)
-	else:
-		res_content = sub["detail"]
-	code_content = utils.read_file(db.path_code + "%d.txt" % sid)
+	res_content = sub["detail"]
+	code_content = sub["code"]
 	
 	try:
 		res = json.loads(res_content)

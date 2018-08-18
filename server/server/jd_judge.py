@@ -61,6 +61,11 @@ def do_send_contestant_files(code_file, language):
 	do_post(PIGEON_URL + "api/send_file", {"md5": md5, "content": content})
 	return md5
 
+def do_send_contestant_code(code, language):
+	fname = db.path_temp + "temp_code.txt"
+	utils.write_file(fname, code)
+	return do_send_contestant_files(fname, language)
+
 def do_submit_to_pigeon(sid):
 	print("Submitting sid = %s" % sid)
 	global pendings
@@ -74,16 +79,19 @@ def do_submit_to_pigeon(sid):
 	task_id = uuid.uuid1().hex
 	sub = db.do_get_submission(sid)
 	prob = db.do_get_problem_info(sub["pid"])
+	# TODO: add this to database
+	prob_md5 = "judgeduck-problems/" + sub["pid"]
 	task = {
 		"task_id": task_id,
 		"priority": priority,
 		"sid": sid,
-		"problem_md5": prob["md5"],
+		"problem_md5": prob_md5,
 		"sub": sub,
 		"language": sub["language"],
 	}
 	#do_send_problem_file(prob["md5"])
-	task["contestant_md5"] = do_send_contestant_files(db.path_code + "%s.txt" % sid, sub["language"])
+	task["contestant_md5"] = do_send_contestant_code(sub["code"], sub["language"])
+	#task["contestant_md5"] = do_send_contestant_files(db.path_code + "%s.txt" % sid, sub["language"])
 	res = do_post(PIGEON_URL + "api/submit_task", {
 		"taskid": task["task_id"],
 		"problem_md5": task["problem_md5"],
@@ -124,15 +132,14 @@ def judge_server_running_thread_func():
 				do_submit_to_pigeon(tasks[i]["sid"])
 				continue
 			result = result["result"]
-			sub = tasks[i]["sub"]
+			sid = tasks[i]["sid"]
 			has_completed = result["has_completed"] == "true"
-			db.update_sub_using_json(sub, result, has_completed)
+			db.do_update_sub_using_json(sid, result, has_completed)
 			if has_completed:
-				db.update_submission(sub["sid"], utils.get_current_time())
-				utils.system("rm", ["-rf", db.path_pending + "%s.txt" % sub["sid"]])
-				utils.system("rm", ["-rf", db.path_pending_rejudge + "%s.txt" % sub["sid"]])
+				utils.system("rm", ["-rf", db.path_pending + "%s.txt" % sid])
+				utils.system("rm", ["-rf", db.path_pending_rejudge + "%s.txt" % sid])
 				runnings_lock.acquire()
-				del runnings[sub["sid"]]
+				del runnings[sid]
 				runnings_lock.release()
 
 def judge_server_thread_func():
@@ -186,12 +193,6 @@ class myThread(threading.Thread):
 		self.func()
 
 def start_thread_func():
-	li = db.do_get_problem_list()
-	for pid in li:
-		pinfo = db.do_get_problem_info(pid)
-		md5 = "judgeduck-problems/" + pid
-		pinfo["md5"] = md5
-		print("md5 of problem %s is %s" % (pid, md5))
 	print("Starting judge server threads")
 	judge_server_thread = myThread("judgesrv", judge_server_thread_func)
 	judge_server_thread.start()
