@@ -11,6 +11,8 @@ operation_lock.acquire()
 result_lock = threading.Lock()
 result_lock.acquire()
 
+has_modifications = False
+
 operation = None
 result = None
 
@@ -75,11 +77,16 @@ def do_operation(op):
 
 def begin():
 	lock.acquire()
-	do_operation({
-		"type": "begin",
-	})
+	global has_modifications
+	has_modifications = False
 
 def query(statement, parameters = ()):
+	global has_modifications
+	if (not has_modifications) and (statement[:6].lower() != "select"):
+		has_modifications = True
+		do_operation({
+			"type": "begin",
+		})
 	return do_operation({
 		"type": "query",
 		"statement": statement,
@@ -93,16 +100,26 @@ def query_value(statement, parameters = ()):
 		return None
 
 def commit():
-	do_operation({
-		"type": "commit",
-	})
+	global has_modifications
+	if has_modifications:
+		do_operation({
+			"type": "commit",
+		})
+		has_modifications = False
 	end()
 
 def rollback():
-	do_operation({
-		"type": "rollback",
-	})
+	global has_modifications
+	if has_modifications:
+		do_operation({
+			"type": "rollback",
+		})
+		has_modifications = False
 	end()
 
 def end():
+	global has_modifications
+	if has_modifications:
+		rollback()
+		return
 	lock.release()
