@@ -53,6 +53,11 @@ th, td {
 	overflow-y: scroll;
 }
 
+.no-decoration,
+.no-decoration > a {
+	text-decoration: none;
+}
+
 textarea{
 	height:50%%;
 	width:100%%;

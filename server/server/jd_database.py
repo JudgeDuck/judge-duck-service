@@ -50,15 +50,28 @@ def do_get_beibishi_count():
 	lock.release()
 	return ret
 
-def do_get_problem_list(problem_class = ""):
+def do_get_problem_list(req, problem_class = ""):
 	lock.acquire()
 	sql.begin()
 	# TODO admin mode
 	sql.has_error = False
-	if problem_class == "":
-		res = sql.query("select `pid`, `name`, `description`, `time_limit`, `memory_limit` from `problems` where `hidden` = 0 order by `pid`")
-	else:
-		res = sql.query("select `pid`, `name`, `description`, `time_limit`, `memory_limit` from `problems` where `hidden` = 0 and `class` = ? order by `pid`", (problem_class, ))
+	
+	stmt = "select `pid`, `name`, `description`, `time_limit`, `memory_limit`, `votes`, 0 as `value` from `problems` where `hidden` = 0"
+	params = []
+	
+	username = req.session.get("username", None)
+	if username != None:
+		stmt = "select `problems`.`pid` as `pid`, `name`, `description`, `time_limit`, `memory_limit`, `votes`, `value` from `problems` left join `problem_votes` on `problems`.`pid` = `problem_votes`.`pid` and `username` = ? where `hidden` = 0"
+		params = [username]
+	
+	if problem_class != "":
+		stmt = stmt + " and `class` = ?"
+		params.append(problem_class)
+	
+	stmt += " order by `problems`.`pid`"
+	
+	res = sql.query(stmt, params)
+	
 	if sql.has_error:
 		res = []
 	sql.rollback()
@@ -67,6 +80,8 @@ def do_get_problem_list(problem_class = ""):
 		p = dict(res[i])
 		p["time_limit_text"] = utils.render_time_ns(p["time_limit"])
 		p["memory_limit_text"] = utils.render_memory_kb(p["memory_limit"])
+		if p["value"] == None:
+			p["value"] = 0
 		res[i] = p
 	
 	lock.release()
@@ -91,6 +106,58 @@ def do_get_problem_info(pid):
 	return ret
 
 #
+
+def do_vote_problem(req, pid, value):
+	ret = {"status": "failed"}
+	username = req.session.get("username", None)
+	if username == None:
+		ret["error"] = "请先登录"
+		return ret
+	
+	if (value != 1) and (value != -1) and (value != 0):
+		ret["error"] = "请选择好评或差评"
+		return ret
+	
+	lock.acquire()
+	sql.begin()
+	
+	sql.has_error = False
+	rows = sql.query("select * from `problem_votes` where `pid` = ? and `username` = ?", (pid, username))
+	if sql.has_error:
+		sql.rollback()
+		lock.release()
+		ret["error"] = "系统错误，请联系管理员"
+		return ret
+	
+	last_value = 0
+	
+	if len(rows) > 0:
+		for row in rows:
+			last_value += row["value"]
+		sql.query("delete from `problem_votes` where `pid` = ? and `username` = ?", (pid, username))
+	
+	if value != 0:
+		sql.query(
+			"insert into `problem_votes` (`pid`, `username`, `value`, `time`) values (?,?,?,?)",
+			(pid, username, value, utils.get_current_time())
+		)
+	
+	if -last_value + value != 0:
+		sql.query(
+			"update `problems` set `votes` = `votes` + ? where `pid` = ?",
+			("%d" % (-last_value + value), pid)
+		)
+	
+	if sql.has_error:
+		sql.rollback()
+		lock.release()
+		ret["error"] = "系统错误，请联系管理员"
+		return ret
+	
+	sql.commit()
+	lock.release()
+	ret["status"] = "success"
+	return ret
 
 # return json
 def do_submit(req, pid, language, code):

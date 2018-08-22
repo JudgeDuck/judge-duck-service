@@ -190,14 +190,38 @@ def problems_view(req):
 		)
 	doc_classes = "".join(doc_classes)
 	
-	plist = db.do_get_problem_list(problem_class)
+	plist = db.do_get_problem_list(req, problem_class)
 	ret = []
 	for pinfo in plist:
 		pid = pinfo["pid"]
 		name = html.escape(pinfo["name"])
 		description = "%s %s, %s" % (html.escape(pinfo["description"]), pinfo["time_limit_text"], pinfo["memory_limit_text"])
-		ret.append(htmldocs.problems_problem % (pid, pid, name, description))
+		
+		votes = pinfo["votes"]
+		value = pinfo["value"]
+		
+		vote_content = []
+		vote_content.append(
+			"""<a id="vote_up_%s" href="javascript:judgeduck.vote_problem('%s', %s, %s)" class="pull-left glyphicon glyphicon-triangle-top" style="color:%s; font-weight:%s;"></a>""" % (
+				pid, pid, "1" if value == 0 else "0", value, "#ccc" if value != 1 else "green", "normal" if value != 1 else "bold"
+			)
+		)
+		vote_content.append("""<span id="vote_value_%s" style="color:%s">%s</span>""" % (
+			pid, "green" if votes > 0 else "#ccc" if votes == 0 else "red", ("+%s" if votes > 0 else "%s") % votes
+		))
+		vote_content.append(
+			"""<a id="vote_down_%s" href="javascript:judgeduck.vote_problem('%s', %s, %s)" class="pull-right glyphicon glyphicon-triangle-bottom" style="color:%s; font-weight:%s;"></a>""" % (
+				pid, pid, "-1" if value == 0 else "0", value, "#ccc" if value != -1 else "red", "normal" if value != -1 else "bold"
+			)
+		)
+		
+		ret.append(htmldocs.problems_problem % (pid, pid, name, description, "".join(vote_content)))
 	return render_view(req, "题目列表", htmldocs.problems_htmldoc % (doc_classes, "\n".join(ret)))
+
+def do_vote_problem(req):
+	pid = req.POST.get("pid", "")
+	value = utils.parse_int(req.POST.get("value", ""), 0)
+	return json_response(req, db.do_vote_problem(req, pid, value))
 
 def problem_view(req):
 	pid = req.path[len("/problem/"):]
@@ -636,6 +660,8 @@ def entry(req):
 	
 	if path == "/problems":
 		return problems_view(req)
+	if path == "/problems/do_vote":
+		return do_vote_problem(req)
 	if re.match("^/problem/[^/]+/board$", path):
 		return problem_board_view(req)
 	if re.match("^/problem/[^/]+$", path):

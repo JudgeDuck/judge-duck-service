@@ -25,6 +25,9 @@ problems_problem = """
 					<td> %s </td>
 					<td> <a href="/problem/%s"> %s </a> </td>
 					<td> %s </td>
+					<td class="no-decoration" style="text-align:center">
+						%s
+					</td>
 				</tr>
 """
 

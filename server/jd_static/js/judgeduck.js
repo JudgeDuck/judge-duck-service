@@ -257,6 +257,50 @@ var judgeduck = function() {
 		}
 	};
 	
+	var vote_problem = function(pid, val, prev_val) {
+		var up = $("#vote_up_" + pid);
+		var down = $("#vote_down_" + pid);
+		var value = $("#vote_value_" + pid);
+		up.css("color", "#ccc");
+		up.css("font-weight", "normal");
+		down.css("color", "#ccc");
+		down.css("font-weight", "normal");
+		up.attr("href", "javascript:judgeduck.vote_problem('" + pid + "', 1, " + val + ")");
+		down.attr("href", "javascript:judgeduck.vote_problem('" + pid + "', -1, " + val + ")");
+		
+		if (val == 1) {
+			up.css("color", "green");
+			up.css("font-weight", "bold");
+			up.attr("href", "javascript:judgeduck.vote_problem('" + pid + "', 0, " + val + ")");
+			down.attr("href", "javascript:judgeduck.vote_problem('" + pid + "', 0, " + val + ")");
+		} else if (val == -1) {
+			down.css("color", "red");
+			down.css("font-weight", "bold");
+			up.attr("href", "javascript:judgeduck.vote_problem('" + pid + "', 0, " + val + ")");
+			down.attr("href", "javascript:judgeduck.vote_problem('" + pid + "', 0, " + val + ")");
+		}
+		
+		val += parseInt(value.text()) - prev_val;
+		value.css("color", val > 0 ? "green" : val == 0 ? "#ccc" : "red");
+		value.text(val > 0 ? "+" + val : "" + val);
+		
+		do_post("/problems/do_vote", {
+			pid: pid,
+			value: val
+		}, function(data) {
+			if (!data) {
+				return alert("网络错误");
+			}
+			if (data["status"] == "failed") {
+				return alert(data["error"]);
+			}
+			if (data["status"] == "success") {
+				return;
+			}
+			return alert("未知错误");
+		});
+	};
+	
 	var submit = function() {
 		var pid = $("#pid").val();
 		var language = $("#language").val();
@@ -290,6 +334,7 @@ var judgeduck = function() {
 		register: register,
 		login: login,
 		edit_profile: edit_profile,
+		vote_problem: vote_problem,
 		submit: submit,
 		post_blog: post_blog,
 		edit_blog: edit_blog
