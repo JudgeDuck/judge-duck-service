@@ -280,13 +280,14 @@ var judgeduck = function() {
 			down.attr("href", "javascript:judgeduck.vote_problem('" + pid + "', 0, " + val + ")");
 		}
 		
+		var org_val = val;
 		val += parseInt(value.text()) - prev_val;
 		value.css("color", val > 0 ? "green" : val == 0 ? "#ccc" : "red");
 		value.text(val > 0 ? "+" + val : "" + val);
 		
 		do_post("/problems/do_vote", {
 			pid: pid,
-			value: val
+			value: org_val
 		}, function(data) {
 			if (!data) {
 				return alert("网络错误");
