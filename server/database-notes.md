@@ -1,3 +1,8 @@
+## 20180822-1
+
+Metadata:
+* `jd_meta`: ('version', '20180822-1')
+
 ## 20180814-1
 
 Metadata:

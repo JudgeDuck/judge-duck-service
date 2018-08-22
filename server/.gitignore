@@ -5,6 +5,7 @@ result/
 contestant.*
 db.sqlite3
 jd.sqlite3
+jd.sqlite3-journal
 *.log
 input.txt
 judging

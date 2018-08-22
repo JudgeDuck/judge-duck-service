@@ -4,7 +4,7 @@
 
 from . import jd_sql as sql
 
-db_version = "20180814-1"
+db_version = "20180822-1"
 
 path_prefix = "jd_data/"
 path_temp = path_prefix + "temp/"

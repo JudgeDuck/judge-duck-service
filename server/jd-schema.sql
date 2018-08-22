@@ -35,7 +35,14 @@ CREATE TABLE IF NOT EXISTS `problems` (
 	`statement_html`	TEXT NOT NULL,
 	`sample_code`	TEXT NOT NULL,
 	`class`	TEXT NOT NULL DEFAULT 'traditional',
-	`hidden`	INTEGER NOT NULL DEFAULT 1
+	`hidden`	INTEGER NOT NULL DEFAULT 1,
+	`votes`	INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE IF NOT EXISTS `problem_votes` (
+	`pid`	TEXT NOT NULL,
+	`username`	TEXT NOT NULL,
+	`value`	INTEGER NOT NULL,
+	`time`	TEXT NOT NULL
 );
 CREATE TABLE IF NOT EXISTS `jd_meta` (
 	`key`	TEXT NOT NULL UNIQUE,
@@ -61,6 +68,10 @@ CREATE INDEX IF NOT EXISTS `submissions_pid` ON `submissions` (
 );
 CREATE UNIQUE INDEX IF NOT EXISTS `sid` ON `submissions` (
 	`sid`
+);
+CREATE UNIQUE INDEX IF NOT EXISTS `problem_votes_pid_username` ON `problem_votes` (
+	`pid`,
+	`username`
 );
 CREATE INDEX IF NOT EXISTS `problem_hidden` ON `problems` (
 	`hidden`
