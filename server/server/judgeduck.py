@@ -67,7 +67,9 @@ def json_response(req, info):
 	return HttpResponse(json.dumps(info), content_type="application/json")
 
 def index_view(req):
-	return render_view(req, "", htmldocs.index_htmldoc % render_notices())
+	index_content = utils.read_file("jd_data/index.md")
+	index_html = markdown2.markdown(index_content)
+	return render_view(req, "", htmldocs.index_htmldoc % (render_notices(), index_html))
 
 def render_notices():
 	notices = db.do_get_notices()
