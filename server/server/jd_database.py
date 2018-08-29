@@ -402,12 +402,6 @@ def do_edit_profile(req, password, email, new_password, signature):
 		sql.rollback()
 		lock.release()
 		return ret
-	cnt = sql.query_value("select count(*) from `users` where `username` = ?", (username, ))
-	if cnt != 0:
-		ret["error"] = "用户名已被使用！"
-		sql.rollback()
-		lock.release()
-		return ret
 	sql.has_error = False
 	if new_password != "":
 		sql.query("update `users` set `password` = ? where `username` = ?", (encrypt_password(new_password), username))
