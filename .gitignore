@@ -2,4 +2,5 @@
 judging.c
 judgesrv
 /Makefile
+*.DS_store
 
