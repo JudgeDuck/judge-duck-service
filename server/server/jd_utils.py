@@ -63,7 +63,7 @@ def check_if_file_present(name):
 
 def read_file(name, fallback = ""):
 	try:
-		f = open(name, "r")
+		f = open(name, "r", encoding="utf-8")
 		res = f.read()
 		f.close()
 		return res
@@ -81,7 +81,7 @@ def read_file_b(name, fallback = b""):
 
 def write_file(name, content):
 	try:
-		f = open(name, "w")
+		f = open(name, "w", encoding="utf-8")
 		f.write(content)
 		f.close()
 		return True
