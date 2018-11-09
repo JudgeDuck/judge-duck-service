@@ -177,7 +177,7 @@ def do_submit(req, pid, language, code):
 	
 	sql.query("update `users` set `language` = ? where `username` = ?", (language, name))
 	
-	pcnt = sql.query_value("select count(*) from `problems` where `pid` = ?", (pid, ))
+	pcnt = sql.query_value("select count(*) from `problems` where `pid` = ? and `hidden` = 0", (pid, ))
 	
 	if sql.has_error:
 		sql.rollback()
