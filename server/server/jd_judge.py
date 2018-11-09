@@ -175,6 +175,8 @@ def judge_server_thread_func():
 		for sid in pendings:
 			if (max_sid == -1) or (pendings[sid] > pendings[max_sid]):
 				max_sid = sid
+			if (max_sid != -1) and (pendings[sid] == pendings[max_sid]) and (sid < max_sid):
+				max_sid = sid
 		if max_sid == -1:
 			continue
 		do_submit_to_pigeon(max_sid)
