@@ -609,6 +609,9 @@ def do_edit_blog(req):
 def beibishi_view(req):
 	return render_view(req, "背笔试！", htmldocs.beibishi_htmldoc % db.do_get_beibishi_count())
 
+def status_view(req):
+	return render_view(req, "服务状态", htmldocs.empty_page_htmldoc % jd_judge.server_status_str)
+
 
 
 
@@ -640,6 +643,9 @@ def entry(req):
 		return index_view(req)
 	if path == "/faq":
 		return faq_view(req)
+	
+	if path == "/status":
+		return status_view(req)
 	
 	if path == "/user/register":
 		return register_view(req)

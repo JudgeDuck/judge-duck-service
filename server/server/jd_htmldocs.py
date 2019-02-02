@@ -9,6 +9,8 @@ header_htmldoc = utils.read_file(path_htmldocs + "header.html")
 header_online_htmldoc = utils.read_file(path_htmldocs + "header_online.html")
 footer_htmldoc = utils.read_file(path_htmldocs + "footer.html")
 
+empty_page_htmldoc = utils.read_file(path_htmldocs + "empty_page.html")
+
 index_htmldoc = utils.read_file(path_htmldocs + "index.html")
 faq_htmldoc = utils.read_file(path_htmldocs + "faq.html")
 register_htmldoc = utils.read_file(path_htmldocs + "register.html")

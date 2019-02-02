@@ -9,6 +9,7 @@ import uuid
 import urllib.request, urllib.parse
 import json
 import base64
+import markdown2
 
 from . import jd_htmldocs as htmldocs
 from . import jd_database as db
@@ -27,10 +28,28 @@ def do_post(url, data_dict):
 		try:
 			data = urllib.parse.urlencode(data_dict).encode()
 			req = urllib.request.Request(url, data=data)
-			res = urllib.request.urlopen(req)
+			res = urllib.request.urlopen(req, timeout=3)
 			return res.read().decode('utf-8')
 		except:
 			time.sleep(1)
+
+def do_get(url):
+	while True:
+		try:
+			req = urllib.request.Request(url)
+			res = urllib.request.urlopen(req, timeout=3)
+			return res.read().decode('utf-8')
+		except:
+			time.sleep(1)
+
+def try_get(url):
+	try:
+		req = urllib.request.Request(url)
+		res = urllib.request.urlopen(req, timeout=3)
+		return res.read().decode('utf-8')
+	except:
+		time.sleep(1)
+		return None
 
 
 
@@ -181,6 +200,31 @@ def judge_server_thread_func():
 			continue
 		do_submit_to_pigeon(max_sid)
 
+server_status_str = "Loading ..."
+
+def judge_monitor_thread_func():
+	global server_status_str
+	global runnings
+	global pendings
+	while True:
+		res = try_get(PIGEON_URL)
+		pigeon_avail = False
+		if res != None:
+			pigeon_avail = True
+		server_avail = pigeon_avail
+		tmp = ["## 服务状态", "", "---", ""]
+		tmp.append("* 评测服务可用性: %s" % server_avail)
+		tmp.append("* Judge Pigeon 可用性: %s" % pigeon_avail)
+		tmp.append("* Running 数量: %s" % len(runnings))
+		tmp.append("* Pending 数量: %s" % len(pendings))
+		tmp.append("* Pending 文件个数: %s" % len(utils.list_dir(db.path_pending)))
+		tmp.append("* Pending Rejudge 文件个数: %s" % len(utils.list_dir(db.path_pending_rejudge)))
+		if not server_avail:
+			tmp.append("* <font color='red'>**Warning: 评测服务不可用！**</font>")
+		server_status_str = markdown2.markdown("\n".join(tmp))
+		
+		time.sleep(3)
+
 
 
 judge_lock = threading.Lock()
@@ -200,6 +244,8 @@ def start_thread_func():
 	judge_server_thread.start()
 	judge_server_running_thread = myThread("judgesrv-running", judge_server_running_thread_func)
 	judge_server_running_thread.start()
+	judge_monitor_thread = myThread("judge-monitor-thread", judge_monitor_thread_func)
+	judge_monitor_thread.start()
 
 def start():
 	start_thread = myThread("start-judgesrv", start_thread_func)
