@@ -1,0 +1,274 @@
+<!DOCTYPE HTML>
+<html lang="zh">
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1, max-scale=1" />
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<link rel="icon" type="img/x-ico"  href="images/judgeduck-logo.png" />
+		<link rel="stylesheet" href="/libs/css/bootstrap.min.css" />
+		<link rel="stylesheet" type="text/css" href="css/style-desktop.css" media="screen and (min-width: 1000px)" />
+		<link rel="stylesheet" type="text/css" href="css/style-mobile.css" media="screen and (max-width: 999px)" />
+		<script src="libs/js/jquery.js"> </script>
+		<script src="libs/js/bootstrap.min.js"></script>
+
+		<!-- codemirror -->
+		<link rel="stylesheet" href="libs/codemirror/lib/codemirror.css"/>
+		<script src="libs/codemirror/lib/codemirror.js"> </script>
+		<script src="libs/codemirror/mode/clike/clike.js"> </script>
+		<script src="libs/codemirror/addon/edit/matchbrackets.js"> </script>
+		<link rel="stylesheet" href="libs/codemirror/theme/solarized.css"/>
+
+		<script src="js/jd-client.js"> </script>
+		<!-- <script src="js/slide.js"> </script> -->
+		<!-- <script src="js/background.js"> </script> -->
+
+		<title>评测鸭</title>
+	</head>
+	<body>
+		<!-- <canvas id="canvas"> -->
+		<!-- </canvas> -->
+		
+		<!-- Fixed navbar -->
+		<nav id="main_nav" class="navbar navbar-default navbar-fixed-top" role="navigation">
+			<div class="container" style="padding:5px">
+				<div class="navbar-header">
+					<div class="navbar-brand">
+						<img src="/images/judgeduck-logo.png" width="40px" height="40px" style="margin:-10px -10px -10px 0px;" />
+					</div>
+					<font class="navbar-brand">
+						<b> 评测鸭 (JudgeDuck) </b>
+					</font>
+					<font class="navbar-brand navbar-collapse collapse">
+						&nbsp;
+						稳定精确的程序评测系统
+					</font>
+					<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+						<span class="sr-only">Toggle navigation</span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+					</button>
+				</div>
+				<div id="navbar" class="navbar-collapse collapse">
+					<ul class="nav navbar-nav navbar-right">
+						<li class="nav-item">
+							<a class="nav-link" href="."> 首页 </a>
+						</li>
+					</ul>
+				</div><!--/.nav-collapse -->
+			</div>
+		</nav>
+		
+		<div id="page-1">
+			<div id="title-wrapper">
+				<div id="title">
+					<div id="title-logo-container">
+						<img src="images/judgeduck-medium.png" id="title-logo" alt="评测鸭 (JudgeDuck)" />
+					</div>
+					<span id="title-title">
+						评测鸭 (JudgeDuck)
+					</span>
+					<div id="title-subtitle">
+						Stable and Accurate Judge System for Programming Contests and Training <br />
+						为程序设计竞赛和训练打造的稳定精确评测系统
+					</div>
+				</div>
+			</div>
+		</div>
+		<div id="page-2" class="page page-under-title">
+			<div class="">
+				<div class="feature-page-container">
+					<div class="feature-container text-center">
+						<h1>
+							<span class="glyphicon glyphicon-time" aria-hidden="true" style="color:#66e"></span>
+						</h1>
+						<h3>
+							精确
+						</h3>
+						<p>
+							计时精度达 1 纳秒 (10<sup>-9</sup> 秒)，精确把握程序运行时间。
+						</p>
+					</div>
+					
+					<div class="feature-container text-center">
+						<h1>
+							<span class="glyphicon glyphicon-stats" aria-hidden="true" style="color:#444"></span>
+						</h1>
+						<h3>
+							稳定
+						</h3>
+						<p>
+							多次测试同一程序，时间误差不超过 1%+1微秒<sup>*</sup>，领先业界主流评测系统一个数量级<sup>*</sup>。
+						</p>
+					</div>
+					
+					<div class="feature-container text-center">
+						<h1>
+							<span class="glyphicon glyphicon-check" aria-hidden="true" style="color:#c44"></span>
+						</h1>
+						<h3>
+							兼容
+						</h3>
+						<p>
+							兼容 C、C++ 等主流程序设计语言<sup>*</sup>，实现从其他评测系统的极速迁移。
+						</p>
+					</div>
+					
+					<div class="feature-container text-center">
+						<h1>
+							<!-- <span class="glyphicon glyphicon-phone" aria-hidden="true"></span> -->
+							<img src="images/judgeduck-logo.png" class="img" alt="评测鸭" width="36px" height="36px" style="margin: -8px 0px 8px 0px" />
+						</h1>
+						<h3>
+							自研
+						</h3>
+						<p>
+							自主研发评测专用操作系统，掌握关键技术。
+						</p>
+					</div>
+					<div class="feature-container text-center">
+						<h1>
+							<span class="glyphicon glyphicon-star" aria-hidden="true" style="color:#2a2"></span>
+						</h1>
+						<h3>
+							易用
+						</h3>
+						<p>
+							简单易用的云评测服务，一分钟快速上手。
+						</p>
+					</div>
+				</div>
+				
+				
+				
+				<!-- <div class="break"> </div> -->
+				<!-- <div class="img-container"> -->
+				<!-- </div> -->
+			</div>
+		</div>
+		
+		<div id="page-3" class="page page-primary">
+			<div class="content-container">
+				<div class="words-container text-center">
+					<h1> 体验稳定精确的评测系统？ </h1>
+					<a class="link-go" id="custom-test-trigger" style="font-size: 20px;">
+						立即体验
+					</a>
+					<script>
+						$("#custom-test-trigger").click(function(){
+							$("#custom-test-trigger").hide()
+							$("#custom-test-wrapper").slideDown()
+							$("#page-3>.content-container").css("padding","10px 0px")
+							Load_Editor()
+						})
+					</script>
+				</div>
+				<div id="custom-test-wrapper" hidden>
+					代码
+					<div style="display: flex;">
+						<div style="width: 13%; background-color: #ddddddaa; display: flex; justify-content: space-between; flex-direction: column">
+							<div>
+								<input id="language" type="hidden" value="cpp" />
+								<div id="selector-c" class="select-items" onclick="Select('c')"> C </div>
+								<div id="selector-cpp" class="select-items selected" onclick="Select('cpp')"> C++ </div>
+								<div id="selector-cpp11" class="select-items" onclick="Select('cpp11')"> C++11 </div>
+								<script>
+								function Select(x){
+									$("#selector-c").removeClass("selected")
+									$("#selector-cpp").removeClass("selected")
+									$("#selector-cpp11").removeClass("selected")
+									$("#selector-"+x).addClass("selected")
+									$("#language").val(x)
+								}
+								</script>
+							</div>
+							<a class="link-go button" style="margin: 0px 10px 20px 10px;" onclick="submit_custom_test()"> 提交 </a>
+						</div>
+						<div style="width: 87%">
+							<textarea id="code">#include &lt;stdio.h&gt;&#10;int main() {&#10;	printf("hello world\n");&#10;}</textarea>
+						</div>
+					</div>
+					<div id="custom-test-inner-box">
+						<div id="custom-test-judge-result" style="">
+							<span> 评测结果 </span>
+							<textarea id="judgeresult" spellcheck="false"></textarea>
+						</div>
+						<div id="custom-test-input-data" style="">
+							<span> 输入数据 </span>
+							<textarea id="inputdata" rows="5"></textarea>
+						</div>
+					</div>
+					<script>
+						var editor_loaded = false;
+						function Load_Editor(){
+							if(editor_loaded) return
+							editor_loaded = true
+							code_input_editor = CodeMirror.fromTextArea(document.getElementById("code"),{
+								mode: "text/x-c++src",
+								lineNumbers: true,
+								theme: "solarized light",
+								lineWrapping: true,
+								gutters: ["CodeMirror-linenumbers"],
+								matchBrackets: true,
+								indentUnit: 4,
+								indentWithTabs: true,
+								cursorHeight: 0.85
+							});
+							inputdata_input_editor = CodeMirror.fromTextArea(document.getElementById("inputdata"),{
+								lineNumbers: true,
+								theme: "solarized light",
+								lineWrapping: true,
+								gutters: ["CodeMirror-linenumbers"],
+								matchBrackets: true,
+								indentUnit: 4,
+								indentWithTabs: true,
+								cursorHeight: 0.85
+							});
+						}
+					</script>
+				</div>
+			</div>
+		</div>
+		
+		<div id="page-3a" class="page page-primary">
+			<div class="content-container">
+				<div class="words-container text-center">
+					<a class="link-go" href="/index" style="font-size: 20px;">
+						进入 Judge Duck Online →
+					</a>
+				</div>
+			</div>
+		</div>
+		
+		
+		<div id="page-ggg" class="page page-primary">
+			<div class="content-container">
+				<p style="font-size: 8pt; color: #888">
+					<sup>*</sup> 使用评测鸭对多种排序算法程序测得，95%置信度的时间测量误差不超过 1%+1微秒。<br />
+					<sup>*</sup> 业界主流评测系统，是指洛谷、UOJ、大视野在线测评、Vijos等知名度较高的评测系统。<br />
+					<sup>*</sup> 兼容语言和标准库的主要特性，暂不支持第三方库（如 Qt）。<br />
+				</p>
+			</div>
+		</div>
+		<div id="footer">
+			<hr />
+			<p style="padding: 0px; margin: 0px; font-size: 10pt; color: #888">
+				评测鸭 | <a href="https://github.com/JudgeDuck">开源项目</a>
+				<br />
+			</p>
+		</div>
+		<script>
+			
+			function bg_reload() {
+				var body = document.getElementsByTagName('body')[0]
+				var h = Math.max(body.clientWidth * 0.5, document.documentElement.clientHeight)
+				$("#page-1").css("height", h)
+			}
+			
+			window.onresize = function(){
+				bg_reload()
+			}
+			
+			bg_reload()
+		</script>
+	</body>
+</html>

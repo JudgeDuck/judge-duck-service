@@ -1,0 +1,215 @@
+body, p, div, span, a, h1, h2, h3, h4{
+	font-family: -apple-system, 'PingFang SC', 'Source Han Sans SC', 'Noto Sans CJK SC', 'Microsoft Yahei', 'Lantinghei SC', 'Hiragino Sans GB', 'Microsoft Sans Serif', 'WenQuanYi Micro Hei', sans-serif;
+}
+textarea, .CodeMirror div, .CodeMirror span{
+	font-family: monospace, consolas !important;
+	font-size: 15px;
+}
+body{
+	/*background-image: linear-gradient(150deg,RGB(102,204,255),RGB(71,0,182));*/
+	/*background-image: linear-gradient(180deg,#66ccff, #66ccff22 1000px, #66ccff22 100%);*/
+	/*background-color: #66ccff;*/
+	/*background-attachment: fixed;*/
+	margin: 0;
+}
+
+a{
+	text-decoration: none;
+	color: #3399dd;
+	transition: .2s;
+	cursor: pointer;
+}
+a:hover{
+	color: #cc6666;
+	border-color: #cc6666 !important;
+}
+a.link-go{
+	font-size: 18px;
+	border-bottom: 1px dashed #44bbee;
+}
+a.button{
+	font-size: 20px;
+	text-align: center;
+	border: 2px dashed #66ccff;
+}
+h1{
+	font-weight: normal;
+	/*margin: 0px 20px 10px 0px;*/
+	font-size: 30px;
+	color: #222;
+}
+p{
+	font-size: 20px;
+	font-weight: 100px;
+	/*line-height: 35px;*/
+	margin: 10px 0px 10px 0px;
+}
+canvas{
+	/*background-image: linear-gradient(150deg,RGB(102,204,255),RGB(71,0,182));*/
+	/*background: url('https://i0.hdslb.com/bfs/album/1eab364136f7dc024eac1d663bb843c43c996798.jpg'); */
+	z-index: -233;
+	position: fixed;
+	top: 0;
+	left: 0;
+	/*filter: blur(1px);*/
+}
+
+#main_nav{
+	background-color: rgba(255,255,255,.95);
+}
+
+/* Page 1 */
+#page-1{
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: flex-end;
+	background-image: linear-gradient(180deg,#66ccff, #66ccff22 100%);
+	min-height: 100%;
+}
+#title-wrapper{
+	display: flex;
+	align-items: center;
+	width: 100%;
+	height: 95%;
+	background-image: radial-gradient(closest-side, #ffffffff, #ffffff77, #ffffff00);
+}
+#title{
+	width: 100%;
+	position: relative;
+	/*top: -30px;*/
+	padding: 30px 20px;
+	/*background-color: #eeeeeecc;*/
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-direction: column;
+}
+#title-logo-container{
+	border-radius: 50%;
+	overflow: hidden;
+}
+#title-logo{
+	height: 190px;
+}
+#title-title{
+	font-size: 55px;
+	color: #444;
+	margin: 0px 0px 0px 5px;
+	/* letter-spacing: 5px; */
+}
+#title-subtitle{
+	font-size: 18px;
+	color: #666;
+	text-align: center;
+}
+#instruction{
+	color: #fff;
+	font-size: 20px;
+}
+
+.page{
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	/*background-color: #ffffffdd;*/
+	background-color: #66ccff22;
+	padding: 10px;
+}
+.page-under-title{
+	/*background-color: #ffffffdd;*/
+	/*background-image: linear-gradient(180deg,#ffffff22,#ffffffdd);*/
+}
+.page-primary{
+	/*background-color: #ffffffdd;*/
+}
+.content-container{
+	width: 100%;
+	/*background-color: #eeeeeecc;*/
+	padding: 10px 10px 10px 10px;
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: center;
+}
+.feature-page-container{
+	max-width: 1024px;
+	/*background-color: #eeeeeecc;*/
+	padding: 10px 10px 10px 10px;
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: center;
+}
+.words-container{
+	width: 50%;
+}
+.feature-container{
+	max-width: 290px;
+	min-width: 290px;
+	min-height: 230px;
+	border: 1px dashed #888;
+	/*margin: 0px 10px 0px 10px;*/
+	margin: 10px;
+	padding: 10px 10px 0px 10px;
+}
+.img-container{
+
+}
+.img{
+	/*height: 300px;*/
+}
+.break{
+	width: 10%;
+}
+
+
+
+/* Page 3 */
+#custom-test-wrapper{
+	/*width: 60%;*/
+	min-width: 800px;
+	background-color: #eeeeeecc;
+	border-radius: 10pt;
+	padding: 5px 20px;
+}
+#custom-test-inner-box{
+	display: flex;
+	flex-direction: row;
+}
+#custom-test-input-data{
+	width: 35%;
+	height: 350px;
+}
+#custom-test-judge-result{
+	width: 65%;
+	height: 350px;
+}
+#judgeresult{
+	width: 100%;
+	height: 300px;
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+div.select-items{
+	line-height: 40px;
+	font-size: 16px;
+	transition: .1s;
+	padding-left: 10px;
+}
+div.select-items:hover{
+	background-color: #999999aa !important;
+}
+div.select-items.selected{
+	background-color: #bbbbbbaa;
+}
+
+#footer{
+	width: 100%;
+	background-color: #66ccff22;
+	text-align: center;
+	padding: 20px 0px;
+}

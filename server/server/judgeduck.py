@@ -66,6 +66,9 @@ def render_view(req, title, content):
 def json_response(req, info):
 	return HttpResponse(json.dumps(info), content_type="application/json")
 
+def new_index_view(req):
+	return static_view_serve(req, "new_index.html", document_root = "./jd_static")
+
 def index_view(req):
 	index_content = utils.read_file("jd_data/index.md")
 	index_html = markdown2.markdown(index_content)
@@ -102,7 +105,7 @@ def do_register(req):
 
 def login_view(req):
 	if req.session.get("username", None) != None:
-		return HttpResponseRedirect("/")
+		return HttpResponseRedirect("/index")
 	return render_view(req, "登录", htmldocs.login_htmldoc)
 
 def do_login(req):
@@ -640,6 +643,8 @@ def entry(req):
 		return HttpResponseRedirect("/")
 	
 	if path == "/":
+		return new_index_view(req)
+	if path == "/index":
 		return index_view(req)
 	if path == "/faq":
 		return faq_view(req)
