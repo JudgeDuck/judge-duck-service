@@ -666,6 +666,9 @@ def entry(req):
 	if path == "/user/rand_signature":
 		return rand_signature_view(req)
 	
+	if path == "/problem/custom-test":
+		return render_view(req, "自定义测试 - 题目", htmldocs.custom_test_htmldoc)
+	
 	if path == "/problems":
 		return problems_view(req)
 	if path == "/problems/do_vote":

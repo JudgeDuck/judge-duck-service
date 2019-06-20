@@ -1,0 +1,90 @@
+
+<h2> 自定义测试 </h2><hr />时间限制： 1 s <br />空间限制： 512 MB <br /><br /><h3>描述</h3>
+
+<p>自定义测试。上传你的输入文件和程序，得到运行结果。</p>
+
+<h3>接口</h3>
+
+<p><code>int main(int argc, char **argv)</code> 或 <code>int main()</code></p>
+
+<hr />
+				<div class="row">
+					<input type="hidden" id="pid" value="1000" />
+					<div class="col-xs-3 form-group">
+						<label for="language"> 语言 </label>
+						<select class="form-control" id="language">
+							<option> C </option>
+<option selected> C++ </option>
+<option> C++11 </option>
+						</select>
+					</div>
+					<div class="col-xs-12 form-group">
+						<h4>关于标准输出的说明（最后更新：2018年10月23日）</h4>
+
+<p>标准输出将被重定向到内存中，所以你的内存使用量也包括了你的标准输出的大小（向上取整到 4KB 的倍数）。</p>
+
+<p>如果你的程序要进行大量输出，请考虑这一点。</p>
+
+					</div>
+					<div class="col-xs-12 form-group">
+						<label for="code"> 你的代码 </label>
+						<textarea id="code" class="form-control" rows="10" style="font-family:monospace">#include &lt;stdio.h&gt;
+int main() {
+	printf("hello world\n");
+}
+</textarea>
+						<br />
+					</div>
+					<div class="col-xs-12 form-group">
+						<label for="inputdata"> 输入文件 </label>
+						<textarea id="inputdata" class="form-control" rows="10" style="font-family:monospace">test
+1 2 3 4 56789
+</textarea>
+						<br />
+					</div>
+					<div class="col-xs-12 form-group">
+						<a href="javascript:submit_custom_test()" id="btn_submit" class="btn btn-md btn-default"> 提交 </a>
+						<br />
+					</div>
+					<div class="col-xs-12 form-group">
+						<hr />
+						<label for="judgeresult"> 评测结果 </label>
+						<textarea id="judgeresult" class="form-control" rows="10" style="font-family:monospace"></textarea>
+						<br />
+					</div>
+				</div>
+
+	
+	<script>
+		var is_running = false;
+		var rand_str;
+		var submit_custom_test = function() {
+			rand_str = "";
+			for (var i = 0; i < 10; i++) rand_str += "" + Math.floor(Math.random() * 10);
+			
+			$("#judgeresult").val("Submitting ...");
+			
+			duckclient.do_custom_test(
+				{
+					"code": $("#code").val(),
+					"language": $("#language").val(),
+					"input": $("#inputdata").val(),
+				},
+				function(rand_str_local) {
+					return function(res, err) {
+						if (rand_str_local != rand_str) return;
+						var s = "";
+						if (err) {
+							s = "" + err;
+						} else if (res.type == "partial") {
+							s = "" + res.detail;
+						}
+						$("#judgeresult").val($("#judgeresult").val() + "\n" + s);
+					};
+				}(rand_str)
+			);
+		};
+	</script>
+	
+	<script src="/js/judgeduck-client.js?v=20190329"></script>
+
