@@ -83,7 +83,7 @@ var judgeduck = function() {
 				return alert("登录失败：未知错误");
 			}(data);
 			if (ret) {
-				window.location = "/";
+				window.location = "/index";
 			} else {
 				$("#btn_login").attr("disabled", false);
 				$("#password").focus();
